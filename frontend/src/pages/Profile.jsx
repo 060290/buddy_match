@@ -1,15 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
+import { useLocation } from 'react-router-dom';
 
 export default function Profile() {
   const { user, refreshMe } = useAuth();
+  const location = useLocation();
+  const pledgeRef = useRef(null);
   const [profile, setProfile] = useState(null);
   const [dogs, setDogs] = useState([]);
   const [form, setForm] = useState({ name: '', city: '', lat: '', lng: '', experience: '', availability: '' });
   const [saving, setSaving] = useState(false);
   const [pledging, setPledging] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (location.hash === '#safety-pledge' && pledgeRef.current) {
+      pledgeRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.hash, profile]);
 
   useEffect(() => {
     api.get('/users/me')
@@ -55,9 +64,12 @@ export default function Profile() {
 
   const takePledge = async () => {
     setPledging(true);
+    setMessage('');
     try {
       await api.post('/users/me/safety-pledge');
       await refreshMe();
+      const { data } = await api.get('/users/me');
+      setProfile(data);
       setMessage('Thanks for taking the Safety Pledge!');
     } catch (err) {
       setMessage(err.message || 'Could not save pledge');
@@ -73,15 +85,22 @@ export default function Profile() {
       <h1>Profile</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Manage your account and location so buddies can find you.</p>
 
-      {profile.safetyPledgedAt ? (
-        <p className="badge" style={{ marginBottom: '1rem' }}>✓ Safety pledge taken</p>
-      ) : (
-        <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--accent-soft)' }}>
-          <strong>Take the Safety Pledge</strong>
-          <p style={{ margin: '0.5rem 0', fontSize: '0.95rem' }}>Commit to safe, force-free meetups and show others you’re on the same page.</p>
-          <button type="button" className="btn btn-primary" onClick={takePledge} disabled={pledging}>{pledging ? 'Saving…' : 'Take the pledge'}</button>
-        </div>
-      )}
+      <div ref={pledgeRef} id="safety-pledge">
+        {profile.safetyPledgedAt ? (
+          <p className="badge" style={{ marginBottom: '1rem' }}>✓ Safety pledge taken</p>
+        ) : (
+          <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--accent-soft)' }}>
+            <strong>Take the Safety Pledge</strong>
+            <p style={{ margin: '0.5rem 0', fontSize: '0.95rem' }}>Commit to safe, force-free meetups and show others you’re on the same page.</p>
+            <button type="button" className="btn btn-primary" onClick={takePledge} disabled={pledging}>{pledging ? 'Saving…' : 'Take the pledge'}</button>
+            {message && (
+              <p style={{ margin: '0.75rem 0 0', fontSize: '0.9rem', color: message.startsWith('Thanks') ? 'var(--accent)' : '#b54a4a' }}>
+                {message}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
 
       <form onSubmit={saveProfile} className="card" style={{ marginBottom: '1.5rem' }}>
         <h2 style={{ marginTop: 0 }}>Your details</h2>
@@ -121,7 +140,7 @@ export default function Profile() {
           <label>Availability</label>
           <input type="text" name="availability" value={form.availability} onChange={handleChange} placeholder="e.g. Weekend mornings" />
         </div>
-        {message && <p className="error-msg">{message}</p>}
+        {message && !message.startsWith('Thanks') && <p className="error-msg">{message}</p>}
         <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save profile'}</button>
       </form>
 

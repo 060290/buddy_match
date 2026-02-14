@@ -30,12 +30,14 @@ export default function Dashboard() {
       </p>
 
       {!user?.safetyPledgedAt && (
-        <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--warm-soft)', borderColor: 'var(--warm)' }}>
-          <strong>Take the Safety Pledge</strong>
-          <p style={{ margin: '0.5rem 0 0', fontSize: '0.95rem' }}>
-            Show others you’re committed to safe, force-free meetups. <Link to="/profile">Go to Profile</Link> to pledge.
-          </p>
-        </div>
+        <Link to="/profile#safety-pledge" style={{ display: 'block', marginBottom: '1.5rem', textDecoration: 'none', color: 'inherit' }}>
+          <div className="card" style={{ background: 'var(--warm-soft)', borderColor: 'var(--warm)', cursor: 'pointer' }}>
+            <strong>Take the Safety Pledge</strong>
+            <p style={{ margin: '0.5rem 0 0', fontSize: '0.95rem' }}>
+              Show others you’re committed to safe, force-free meetups. Click to go to Profile and take the pledge.
+            </p>
+          </div>
+        </Link>
       )}
 
       <div style={{ display: 'grid', gap: '1.5rem' }}>

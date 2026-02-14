@@ -71,10 +71,15 @@ async function main() {
         lng: -122.6784,
         experience: 'Intermediate',
         availability: 'Weekend mornings',
-        safetyPledgedAt: new Date(),
       },
     });
     console.log('Demo user created: demo@buddymatch.example / demo1234');
+  } else {
+    await prisma.user.update({
+      where: { email: demoEmail },
+      data: { safetyPledgedAt: null },
+    });
+    console.log('Demo user pledge reset (so you can try taking the pledge).');
   }
 }
 
