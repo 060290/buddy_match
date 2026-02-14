@@ -32,9 +32,9 @@ export default function App() {
         <Route path="support" element={<Support />} />
         <Route path="support/:slug" element={<Article />} />
         <Route path="dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="meetups" element={<PrivateRoute><Meetups /></PrivateRoute>} />
         <Route path="meetups/new" element={<PrivateRoute><CreateMeetup /></PrivateRoute>} />
         <Route path="meetups/:id" element={<PrivateRoute><MeetupDetail /></PrivateRoute>} />
+        <Route path="meetups" element={<PrivateRoute><Meetups /></PrivateRoute>} />
         <Route path="messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
         <Route path="nearby" element={<PrivateRoute><Nearby /></PrivateRoute>} />
         <Route path="profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

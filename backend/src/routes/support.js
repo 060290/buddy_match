@@ -19,6 +19,22 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/resources', async (req, res) => {
+  try {
+    const resources = await prisma.supportResource.findMany({
+      orderBy: [{ category: 'asc' }, { order: 'asc' }, { title: 'asc' }],
+    });
+    const byCategory = resources.reduce((acc, r) => {
+      if (!acc[r.category]) acc[r.category] = [];
+      acc[r.category].push(r);
+      return acc;
+    }, {});
+    res.json(byCategory);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.get('/:slug', async (req, res) => {
   try {
     const article = await prisma.supportArticle.findUnique({

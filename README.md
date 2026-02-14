@@ -19,21 +19,35 @@ A full-stack web platform for **reactive dog owners** to safely connect, coordin
 
 ## Setup
 
-### Backend
+**You need both the API and the frontend running.** They run on different ports and work together: the frontend proxies API requests to the backend.
+
+### Option 1: Run both with one command (recommended)
+
+From the **project root** (the `buddy_match` folder):
+
+```bash
+npm install
+npm run setup      # first time only: install deps, create DB, seed data
+npm run dev
+```
+
+This starts the **backend** (port 3001) and **frontend** (port 5173) in the same terminal. Open **http://localhost:5173** in your browser.
+
+### Option 2: Run backend and frontend in two terminals
+
+**Terminal 1 – backend:**
 
 ```bash
 cd backend
 npm install
-cp .env.example .env   # optional: set JWT_SECRET, PORT, FRONTEND_ORIGIN
+cp .env.example .env   # optional: set JWT_SECRET, PORT
 npx prisma generate
 npx prisma db push
 node prisma/seed.js
 npm run dev
 ```
 
-API runs at **http://localhost:3001** (or set `PORT` in `.env` if the port is in use). Health: `GET /api/health`.
-
-### Frontend
+**Terminal 2 – frontend:**
 
 ```bash
 cd frontend
@@ -41,7 +55,7 @@ npm install
 npm run dev
 ```
 
-App runs at **http://localhost:5173** and proxies `/api` to the backend.
+Then open **http://localhost:5173**. The frontend proxies `/api` to the backend at **http://localhost:3001**.
 
 ### Demo account (after seed)
 
