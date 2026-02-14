@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+  name            String?
+  experience      String?
+  availability    String?
+  city            String?
+  lat             Float?
+  lng             Float?
+  safetyPledgedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  dogs             Dog[]
+  posts            Post[]    @relation("PostAuthor")
+  rsvps            Rsvp[]
+  sentMessages     Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+  reportsCreated   Report[]
+}
+
+model Dog {
+  id             String   @id @default(cuid())
+  name           String
+  size           String
+  age            String?
+  breed          String?
+  reactivityTags String?
+  triggers       String?
+  ownerId        String
+  owner          User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  title     String
+  body      String
+  location  String?
+  lat       Float?
+  lng       Float?
+  meetupAt  DateTime?
+  authorId  String
+  author    User      @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  rsvps   Rsvp[]
+  reports Report[]
+}
+
+model Rsvp {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Message {
+  id         String    @id @default(cuid())
+  content    String
+  senderId   String
+  sender     User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User      @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  type       String
+  targetId   String
+  reason     String?
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  postId     String?
+  post       Post?    @relation(fields: [postId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+}
+
+model SupportArticle {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  category  String
+  body      String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
