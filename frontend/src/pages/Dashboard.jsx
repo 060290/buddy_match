@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
+import { DogDoodleMain, DogDoodlePeek } from '../components/DogDoodles';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -23,11 +24,21 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="container" style={{ paddingTop: '1.5rem' }}>
-      <h1>Hi{user?.name ? `, ${user.name}` : ''}</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+    <div className="container dashboard-page">
+      <div className="dashboard-hero">
+        <div className="dashboard-welcome">
+          <h1>Hi{user?.name ? `, ${user.name}` : ''}</h1>
+          <p className="dashboard-tagline">
         Here’s a quick overview of your community activity.
       </p>
+        </div>
+        <div className="dashboard-doodle" aria-hidden>
+          <DogDoodleMain className="dashboard-doodle-main" />
+          <div className="dashboard-doodle-peek">
+            <DogDoodlePeek />
+          </div>
+        </div>
+      </div>
 
       {!user?.safetyPledgedAt && (
         <Link to="/profile#safety-pledge" style={{ display: 'block', marginBottom: '1.5rem', textDecoration: 'none', color: 'inherit' }}>
