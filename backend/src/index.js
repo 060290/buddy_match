@@ -42,13 +42,15 @@ try {
   ];
   const frontendDir = possibleDirs.find((d) => fs.existsSync(d));
   if (frontendDir) {
+    console.log('Serving frontend from', frontendDir);
     app.use(express.static(frontendDir));
     app.get('*', (req, res) => {
       if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not found' });
       res.sendFile(path.join(frontendDir, 'index.html'));
     });
   } else {
-    app.get('/', (_, res) => res.type('text').send('Frontend not found. Set NODE_ENV=production and ensure the build includes frontend/dist.'));
+    console.error('No frontend dir found. Tried:', possibleDirs);
+    app.get('/', (_, res) => res.type('text').send('Frontend not found. Tried: ' + possibleDirs.join(', ')));
   }
 
   const server = app.listen(PORT, () => {
