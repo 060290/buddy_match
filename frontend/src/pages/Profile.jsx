@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import { Link, useLocation } from 'react-router-dom';
 import { resizeImageForAvatar } from '../utils/avatar';
+import { searchPlaces } from '../utils/geocode';
 
 export default function Profile() {
   const { user, refreshMe, updateUser } = useAuth();
@@ -23,6 +24,11 @@ export default function Profile() {
   const [showPasteLink, setShowPasteLink] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [showPledgeModal, setShowPledgeModal] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [locationFocused, setLocationFocused] = useState(false);
+  const [locationSearching, setLocationSearching] = useState(false);
+  const locationDebounceRef = useRef(null);
+  const locationWrapRef = useRef(null);
 
   useEffect(() => {
     if (location.hash === '#safety-pledge' && profile && !profile.safetyPledgedAt) {
@@ -138,11 +144,50 @@ export default function Profile() {
     }
   };
 
+  // Location search: debounced suggestions
+  useEffect(() => {
+    const raw = (form.city || '').trim();
+    if (raw.length < 2) {
+      setLocationSuggestions([]);
+      return;
+    }
+    if (locationDebounceRef.current) clearTimeout(locationDebounceRef.current);
+    locationDebounceRef.current = setTimeout(() => {
+      locationDebounceRef.current = null;
+      setLocationSearching(true);
+      searchPlaces(raw)
+        .then((list) => setLocationSuggestions(list))
+        .catch(() => setLocationSuggestions([]))
+        .finally(() => setLocationSearching(false));
+    }, 400);
+    return () => { if (locationDebounceRef.current) clearTimeout(locationDebounceRef.current); };
+  }, [form.city]);
+
+  const pickLocation = (place) => {
+    setForm((f) => ({
+      ...f,
+      city: place.display_name,
+      lat: place.lat,
+      lng: place.lon,
+    }));
+    setLocationSuggestions([]);
+    setLocationFocused(false);
+  };
+
   const useMyLocation = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setMessage('Location is not supported in this browser');
+      return;
+    }
+    setMessage('');
     navigator.geolocation.getCurrentPosition(
-      (pos) => setForm((f) => ({ ...f, lat: pos.coords.latitude, lng: pos.coords.longitude })),
-      () => setMessage('Could not get location')
+      (pos) => setForm((f) => ({
+        ...f,
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        city: f.city || 'Current location',
+      })),
+      () => setMessage('Could not get your location. Try searching for your city instead.')
     );
   };
 
@@ -187,8 +232,23 @@ export default function Profile() {
     <div className="app-page">
       <div className="app-page-content profile-page-content">
         <div className="profile-main">
-          <h1>Profile</h1>
-          <p className="app-page-lead">Manage your account and location so buddies can find you.</p>
+          {/* Profile header: like common profile pages */}
+          <header className="profile-header">
+            <div className="profile-header-avatar-wrap">
+              <div className="profile-picture-wrap profile-header-avatar">
+                {form.avatarUrl ? (
+                  <img src={form.avatarUrl} alt="" className="profile-picture-img" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('profile-picture-fallback--show'); }} />
+                ) : null}
+                <span className={`profile-picture-fallback ${form.avatarUrl ? '' : 'profile-picture-fallback--show'}`} aria-hidden>
+                  {getInitials(form.name, profile.email)}
+                </span>
+              </div>
+            </div>
+            <div className="profile-header-info">
+              <h1 className="profile-header-name">{form.name || 'Your name'}</h1>
+              <p className="profile-header-email">{profile.email}</p>
+            </div>
+          </header>
 
           <div ref={pledgeRef} id="safety-pledge">
             {profile.safetyPledgedAt ? (
@@ -235,33 +295,14 @@ export default function Profile() {
             </div>
           )}
 
-          <form onSubmit={saveProfile} className="card" style={{ marginBottom: 0 }}>
-            <h2 style={{ marginTop: 0 }}>Your details</h2>
+          <form onSubmit={saveProfile} className="card profile-form-card">
+            <h2 className="profile-section-title">About you</h2>
             <div className="form-group">
-              <label>Email</label>
-              <input type="text" value={profile.email} readOnly disabled style={{ background: 'var(--bg)', color: 'var(--text-muted)' }} />
+              <label>Display name</label>
+              <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="How other buddies see you" />
             </div>
             <div className="form-group">
-              <label>Name</label>
-              <input type="text" name="name" value={form.name} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-              <label>City / area</label>
-              <input type="text" name="city" value={form.city} onChange={handleChange} />
-            </div>
-            <button type="button" className="btn btn-secondary" onClick={useMyLocation} style={{ marginBottom: '1rem' }}>Use my location (lat/lng)</button>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="form-group">
-                <label>Latitude</label>
-                <input type="number" step="any" name="lat" value={form.lat} onChange={handleChange} />
-              </div>
-              <div className="form-group">
-                <label>Longitude</label>
-                <input type="number" step="any" name="lng" value={form.lng} onChange={handleChange} />
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Experience level</label>
+              <label>Experience with reactive dogs</label>
               <select name="experience" value={form.experience} onChange={handleChange}>
                 <option value="">Select…</option>
                 <option value="Beginner">Beginner</option>
@@ -270,11 +311,42 @@ export default function Profile() {
               </select>
             </div>
             <div className="form-group">
-              <label>Availability</label>
-              <input type="text" name="availability" value={form.availability} onChange={handleChange} placeholder="e.g. Weekend mornings" />
+              <label>When you’re usually free</label>
+              <input type="text" name="availability" value={form.availability} onChange={handleChange} placeholder="e.g. Weekend mornings, weekday evenings" />
             </div>
+            <h2 className="profile-section-title" style={{ marginTop: '1.5rem' }}>Location</h2>
+            <p className="profile-field-hint">Used to show you nearby meetups. Search for your city or area.</p>
+            <div className="form-group profile-location-wrap" ref={locationWrapRef} style={{ position: 'relative' }}>
+              <label htmlFor="profile-location">City or area</label>
+              <input
+                id="profile-location"
+                type="text"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+                onFocus={() => setLocationFocused(true)}
+                onBlur={() => setTimeout(() => setLocationFocused(false), 200)}
+                placeholder="Search for your city or area…"
+                autoComplete="off"
+              />
+              {locationSearching && <span className="profile-location-search-hint">Searching…</span>}
+              {locationFocused && locationSuggestions.length > 0 && (
+                <ul className="location-suggestions" aria-label="Location suggestions">
+                  {locationSuggestions.map((place, i) => (
+                    <li key={i}>
+                      <button type="button" className="location-suggestion-btn" onClick={() => pickLocation(place)}>
+                        {place.display_name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={useMyLocation} style={{ marginBottom: '1rem' }}>
+              Use my current location
+            </button>
             {message && !message.startsWith('Thanks') && <p className="error-msg">{message}</p>}
-            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save profile'}</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>
           </form>
         </div>
 
