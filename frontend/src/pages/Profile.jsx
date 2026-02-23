@@ -107,103 +107,108 @@ export default function Profile() {
 
   return (
     <div className="app-page">
-      <div className="app-page-content app-page-content--narrow">
-        <h1>Profile</h1>
-        <p className="app-page-lead">Manage your account and location so buddies can find you.</p>
+      <div className="app-page-content profile-page-content">
+        <div className="profile-main">
+          <h1>Profile</h1>
+          <p className="app-page-lead">Manage your account and location so buddies can find you.</p>
 
-        <div className="profile-picture-card card">
-          <div className="profile-picture-row">
-            <div className="profile-picture-wrap">
-              {form.avatarUrl ? (
-                <img src={form.avatarUrl} alt="" className="profile-picture-img" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('profile-picture-fallback--show'); }} />
-              ) : null}
-              <span className={`profile-picture-fallback ${form.avatarUrl ? '' : 'profile-picture-fallback--show'}`} aria-hidden>
-                {getInitials(form.name, profile.email)}
-              </span>
-            </div>
-            <div className="profile-picture-form">
-              <div className="form-group">
-                <label>Profile picture URL</label>
-                <input type="url" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://…" />
+          <div className="profile-picture-card card">
+            <div className="profile-picture-row">
+              <div className="profile-picture-wrap">
+                {form.avatarUrl ? (
+                  <img src={form.avatarUrl} alt="" className="profile-picture-img" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('profile-picture-fallback--show'); }} />
+                ) : null}
+                <span className={`profile-picture-fallback ${form.avatarUrl ? '' : 'profile-picture-fallback--show'}`} aria-hidden>
+                  {getInitials(form.name, profile.email)}
+                </span>
               </div>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>Paste a link to your photo. It will appear in the sidebar and on your profile.</p>
+              <div className="profile-picture-form">
+                <div className="form-group">
+                  <label>Profile picture URL</label>
+                  <input type="url" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://…" />
+                </div>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>Paste a link to your photo. It will appear in the sidebar and on your profile.</p>
+              </div>
             </div>
           </div>
-        </div>
 
-      <div ref={pledgeRef} id="safety-pledge">
-        {profile.safetyPledgedAt ? (
-          <p className="badge" style={{ marginBottom: '1rem' }}>✓ Safety pledge taken</p>
-        ) : (
-          <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--accent-soft)' }}>
-            <strong>Take the Safety Pledge</strong>
-            <p style={{ margin: '0.5rem 0', fontSize: '0.95rem' }}>Commit to safe, force-free meetups and show others you’re on the same page.</p>
-            <button type="button" className="btn btn-primary" onClick={takePledge} disabled={pledging}>{pledging ? 'Saving…' : 'Take the pledge'}</button>
-            {message && (
-              <p style={{ margin: '0.75rem 0 0', fontSize: '0.9rem', color: message.startsWith('Thanks') ? 'var(--accent)' : '#b54a4a' }}>
-                {message}
-              </p>
+          <div ref={pledgeRef} id="safety-pledge">
+            {profile.safetyPledgedAt ? (
+              <p className="badge" style={{ marginBottom: '1rem' }}>✓ Safety pledge taken</p>
+            ) : (
+              <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--accent-soft)' }}>
+                <strong>Take the Safety Pledge</strong>
+                <p style={{ margin: '0.5rem 0', fontSize: '0.95rem' }}>Commit to safe, force-free meetups and show others you’re on the same page.</p>
+                <button type="button" className="btn btn-primary" onClick={takePledge} disabled={pledging}>{pledging ? 'Saving…' : 'Take the pledge'}</button>
+                {message && (
+                  <p style={{ margin: '0.75rem 0 0', fontSize: '0.9rem', color: message.startsWith('Thanks') ? 'var(--accent)' : '#b54a4a' }}>
+                    {message}
+                  </p>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
 
-      <form onSubmit={saveProfile} className="card" style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ marginTop: 0 }}>Your details</h2>
-        <div className="form-group">
-          <label>Email</label>
-          <input type="text" value={profile.email} readOnly disabled style={{ background: 'var(--bg)', color: 'var(--text-muted)' }} />
+          <form onSubmit={saveProfile} className="card" style={{ marginBottom: 0 }}>
+            <h2 style={{ marginTop: 0 }}>Your details</h2>
+            <div className="form-group">
+              <label>Email</label>
+              <input type="text" value={profile.email} readOnly disabled style={{ background: 'var(--bg)', color: 'var(--text-muted)' }} />
+            </div>
+            <div className="form-group">
+              <label>Name</label>
+              <input type="text" name="name" value={form.name} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+              <label>City / area</label>
+              <input type="text" name="city" value={form.city} onChange={handleChange} />
+            </div>
+            <button type="button" className="btn btn-secondary" onClick={useMyLocation} style={{ marginBottom: '1rem' }}>Use my location (lat/lng)</button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label>Latitude</label>
+                <input type="number" step="any" name="lat" value={form.lat} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label>Longitude</label>
+                <input type="number" step="any" name="lng" value={form.lng} onChange={handleChange} />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Experience level</label>
+              <select name="experience" value={form.experience} onChange={handleChange}>
+                <option value="">Select…</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Experienced">Experienced</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Availability</label>
+              <input type="text" name="availability" value={form.availability} onChange={handleChange} placeholder="e.g. Weekend mornings" />
+            </div>
+            {message && !message.startsWith('Thanks') && <p className="error-msg">{message}</p>}
+            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save profile'}</button>
+          </form>
         </div>
-        <div className="form-group">
-          <label>Name</label>
-          <input type="text" name="name" value={form.name} onChange={handleChange} />
-        </div>
-        <div className="form-group">
-          <label>City / area</label>
-          <input type="text" name="city" value={form.city} onChange={handleChange} />
-        </div>
-        <button type="button" className="btn btn-secondary" onClick={useMyLocation} style={{ marginBottom: '1rem' }}>Use my location (lat/lng)</button>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div className="form-group">
-            <label>Latitude</label>
-            <input type="number" step="any" name="lat" value={form.lat} onChange={handleChange} />
-          </div>
-          <div className="form-group">
-            <label>Longitude</label>
-            <input type="number" step="any" name="lng" value={form.lng} onChange={handleChange} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Experience level</label>
-          <select name="experience" value={form.experience} onChange={handleChange}>
-            <option value="">Select…</option>
-            <option value="Beginner">Beginner</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Experienced">Experienced</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Availability</label>
-          <input type="text" name="availability" value={form.availability} onChange={handleChange} placeholder="e.g. Weekend mornings" />
-        </div>
-        {message && !message.startsWith('Thanks') && <p className="error-msg">{message}</p>}
-        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save profile'}</button>
-      </form>
 
-      <section className="card">
-        <h2 style={{ marginTop: 0 }}>Your dogs</h2>
-        {dogs.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)' }}>No dogs added yet. Add your dog so others know who they might meet.</p>
-        ) : (
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {dogs.map((d) => (
-              <li key={d.id} style={{ padding: '0.75rem 0', borderBottom: '1px solid var(--border)' }}>
-                <strong>{d.name}</strong> · {d.size}{d.age && ` · ${d.age}`}{d.reactivityTags && ` · ${d.reactivityTags}`}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        <aside className="profile-sidebar">
+          <section className="card profile-dogs-card">
+            <h2 style={{ marginTop: 0 }}>Your dogs</h2>
+            {dogs.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>No dogs added yet. Add your dog so others know who they might meet.</p>
+            ) : (
+              <ul className="profile-dogs-list">
+                {dogs.map((d) => (
+                  <li key={d.id} className="profile-dog-item">
+                    <strong>{d.name}</strong>
+                    <span className="profile-dog-meta">{d.size}{d.age && ` · ${d.age}`}{d.breed && ` · ${d.breed}`}{d.reactivityTags && ` · ${d.reactivityTags}`}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </aside>
       </div>
     </div>
   );
