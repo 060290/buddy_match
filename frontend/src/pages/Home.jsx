@@ -25,9 +25,9 @@ export default function Home() {
               <Link to="/register" className="btn btn-primary btn-lg">
                 Find a buddy
               </Link>
-              <Link to="#how-it-works" className="btn btn-secondary btn-lg">
+              <a href="#how-it-works" className="btn btn-secondary btn-lg">
                 How it works
-              </Link>
+              </a>
             </div>
             <div className="landing-hero-badges">
               <span className="landing-badge"><span aria-hidden>🐕</span> Add dog profile</span>
