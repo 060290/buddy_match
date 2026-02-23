@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api } from '../api';
+import { api, setAuthToken } from '../api';
 
 const AuthContext = createContext(null);
 
@@ -13,24 +13,35 @@ export function AuthProvider({ children }) {
         const u = res?.data;
         setUser(u && typeof u === 'object' && !Array.isArray(u) ? u : null);
       })
-      .catch(() => setUser(null))
+      .catch(() => {
+        setUser(null);
+        setAuthToken(null);
+      })
       .finally(() => setLoading(false));
   }, []);
 
   const login = (email, password) =>
     api.post('/auth/login', { email, password }).then((res) => {
+      if (res.data?.token) setAuthToken(res.data.token);
       setUser(res.data.user);
       return res.data;
     });
 
   const register = (data) =>
     api.post('/auth/register', data).then((res) => {
+      if (res.data?.token) setAuthToken(res.data.token);
       setUser(res.data.user);
       return res.data;
     });
 
   const logout = () =>
-    api.post('/auth/logout').then(() => setUser(null)).catch(() => setUser(null));
+    api.post('/auth/logout').then(() => {
+      setAuthToken(null);
+      setUser(null);
+    }).catch(() => {
+      setAuthToken(null);
+      setUser(null);
+    });
 
   const refreshMe = () =>
     api.get('/auth/me').then((res) => setUser(res.data));

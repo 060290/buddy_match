@@ -1,8 +1,15 @@
 const base = '/api';
 
+let authToken = null;
+
+export function setAuthToken(token) {
+  authToken = token || null;
+}
+
 async function request(method, path, body, opts = {}) {
   const url = path.startsWith('http') ? path : `${base}${path}`;
   const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (authToken) headers.Authorization = `Bearer ${authToken}`;
   const config = { method, headers, credentials: 'include', ...opts };
   if (body != null && (method === 'POST' || method === 'PATCH' || method === 'PUT')) {
     config.body = JSON.stringify(body);
