@@ -7,6 +7,8 @@ alwaysApply: true
 
 **You MUST always** end every response that involves code or file changes by giving the user the exact terminal commands to commit and push to GitHub. Do this every time, without exception, even if the user does not ask.
 
+**Before sending your response:** Double-check that you have included the git block below. If your reply involved any code or file changes, the block must appear at the end.
+
 **Always provide this block at the end of your response:**
 
 ```bash
