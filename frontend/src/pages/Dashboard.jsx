@@ -29,9 +29,11 @@ export default function Dashboard() {
   const [meetups, setMeetups] = useState([]);
   const [myMeetups, setMyMeetups] = useState([]);
   const [dogs, setDogs] = useState([]);
+  const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [myMeetupsLoading, setMyMeetupsLoading] = useState(true);
   const [dogsLoading, setDogsLoading] = useState(true);
+  const [friendsLoading, setFriendsLoading] = useState(true);
 
   const radiusMiles = 50;
   const radiusKm = radiusMiles * 1.60934;
@@ -59,6 +61,13 @@ export default function Dashboard() {
       .then((r) => setDogs(Array.isArray(r?.data) ? r.data : []))
       .catch(() => setDogs([]))
       .finally(() => setDogsLoading(false));
+  }, [user?.id]);
+
+  useEffect(() => {
+    api.get('/users/me/friends')
+      .then((r) => setFriends(Array.isArray(r?.data) ? r.data : []))
+      .catch(() => setFriends([]))
+      .finally(() => setFriendsLoading(false));
   }, [user?.id]);
 
   const upcomingFromOthers = useMemo(() => {
@@ -172,6 +181,28 @@ export default function Dashboard() {
                         {m?.rsvpCount > 0 && <span>{m.rsvpCount} going</span>}
                       </span>
                       {m?.userRsvped && <span className="dashboard-card-badge">You’re in</span>}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="dashboard-panel">
+              <div className="dashboard-panel-head">
+                <h2 className="dashboard-panel-title">Your friends</h2>
+              </div>
+              {friendsLoading ? (
+                <p className="dashboard-empty">Loading…</p>
+              ) : friends.length === 0 ? (
+                <p className="dashboard-empty">Add friends from meetups — click a name on any meetup to view their profile and add them.</p>
+              ) : (
+                <div className="dashboard-friends">
+                  {friends.map((f) => (
+                    <Link key={f?.id} to={`/user/${f?.id}`} className="dashboard-friend">
+                      <span className="dashboard-friend-avatar">
+                        {f?.avatarUrl ? <img src={f.avatarUrl} alt="" /> : <span aria-hidden>👤</span>}
+                      </span>
+                      <span className="dashboard-friend-name">{f?.name || 'Buddy'}</span>
                     </Link>
                   ))}
                 </div>

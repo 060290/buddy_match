@@ -59,7 +59,13 @@ export default function MeetupDetail() {
       <article className="card">
         <h1 style={{ marginTop: 0 }}>{post.title}</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
-          by {post.author?.name || 'Buddy'} {post.author?.city && `· ${post.author.city}`}
+          by{' '}
+          {post.author?.id ? (
+            <Link to={`/user/${post.author.id}`} className="meetup-detail-author-link">{post.author.name || 'Buddy'}</Link>
+          ) : (
+            (post.author?.name || 'Buddy')
+          )}
+          {post.author?.city && ` · ${post.author.city}`}
           {post.author?.safetyPledgedAt && <span className="badge" style={{ marginLeft: '0.5rem' }}>Safety pledged</span>}
         </p>
         <div style={{ whiteSpace: 'pre-wrap', marginBottom: '1rem' }}>{post.body}</div>
@@ -99,9 +105,21 @@ export default function MeetupDetail() {
           <h2 style={{ marginTop: 0 }}>Who’s coming ({post.rsvps.length})</h2>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {post.rsvps.map((r) => (
-              <li key={r.userId} style={{ padding: '0.5rem 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>{r.user?.name || 'Buddy'}{r.user?.city && ` · ${r.user.city}`}</span>
-                {r.userId !== user?.id && <Link to={`/messages?with=${r.userId}`} className="btn btn-ghost" style={{ padding: '0.35rem 0.75rem' }}>Message</Link>}
+              <li key={r.userId} className="meetup-detail-rsvp-row">
+                <span>
+                  {r.user?.id ? (
+                    <Link to={`/user/${r.user.id}`} className="meetup-detail-user-link">{r.user?.name || 'Buddy'}</Link>
+                  ) : (
+                    (r.user?.name || 'Buddy')
+                  )}
+                  {r.user?.city && ` · ${r.user.city}`}
+                </span>
+                {r.userId !== user?.id && (
+                  <span className="meetup-detail-rsvp-actions">
+                    <Link to={`/user/${r.userId}`} className="btn btn-ghost btn-sm">Profile</Link>
+                    <Link to={`/messages?with=${r.userId}`} className="btn btn-ghost btn-sm">Message</Link>
+                  </span>
+                )}
               </li>
             ))}
           </ul>

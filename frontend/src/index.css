@@ -1521,6 +1521,55 @@ input, textarea {
   color: var(--text-muted);
 }
 
+.dashboard-friends {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.dashboard-friend {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  color: var(--text);
+  padding: 0.5rem 0;
+}
+
+.dashboard-friend:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.dashboard-friend-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.dashboard-friend-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dashboard-friend-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 .dashboard-map-card {
   overflow: hidden;
 }
@@ -1545,6 +1594,120 @@ input, textarea {
 
 .dashboard-map {
   z-index: 0;
+}
+
+/* User profile (view another user) */
+.user-profile-card {
+  padding: 1.5rem;
+}
+
+.user-profile-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.user-profile-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.user-profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-profile-avatar--placeholder {
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.user-profile-info {
+  min-width: 0;
+}
+
+.user-profile-name {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+}
+
+.user-profile-meta {
+  margin: 0 0 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.user-profile-badge {
+  display: inline-block;
+  margin-top: 0.25rem;
+}
+
+.user-profile-bio {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.user-profile-bio p {
+  margin: 0.35rem 0;
+}
+
+.user-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.user-profile-dogs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-profile-dogs li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.user-profile-dogs li:last-child {
+  border-bottom: none;
+}
+
+/* Meetup detail: author and RSVP links */
+.meetup-detail-author-link,
+.meetup-detail-user-link {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.meetup-detail-author-link:hover,
+.meetup-detail-user-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.meetup-detail-rsvp-row {
+  padding: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+}
+
+.meetup-detail-rsvp-actions {
+  display: flex;
+  gap: 0.35rem;
 }
 
 .btn-sm {

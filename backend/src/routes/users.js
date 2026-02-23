@@ -58,6 +58,46 @@ router.post('/me/safety-pledge', async (req, res) => {
   }
 });
 
+router.get('/me/friends', async (req, res) => {
+  try {
+    const follows = await prisma.follow.findMany({
+      where: { followerId: req.user.id },
+      include: { following: { select: { id: true, name: true, avatarUrl: true, city: true, safetyPledgedAt: true } } },
+    });
+    res.json(follows.map((f) => f.following));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/:id/friend', async (req, res) => {
+  try {
+    const targetId = req.params.id;
+    if (targetId === req.user.id) return res.status(400).json({ error: 'Cannot add yourself' });
+    const target = await prisma.user.findUnique({ where: { id: targetId }, select: { id: true } });
+    if (!target) return res.status(404).json({ error: 'User not found' });
+    await prisma.follow.upsert({
+      where: { followerId_followingId: { followerId: req.user.id, followingId: targetId } },
+      create: { followerId: req.user.id, followingId: targetId },
+      update: {},
+    });
+    res.status(201).json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.delete('/:id/friend', async (req, res) => {
+  try {
+    await prisma.follow.deleteMany({
+      where: { followerId: req.user.id, followingId: req.params.id },
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.get('/nearby', async (req, res) => {
   try {
     const { lat, lng, radiusKm = 50 } = req.query;
@@ -75,6 +115,30 @@ router.get('/nearby', async (req, res) => {
       (u) => Math.abs(u.lat - userLat) <= maxDelta && Math.abs(u.lng - userLng) <= maxDelta
     );
     res.json(nearby);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const uid = req.params.id;
+    if (uid === req.user.id) {
+      const me = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { id: true, name: true, avatarUrl: true, city: true, safetyPledgedAt: true, experience: true, availability: true, dogs: { select: { id: true, name: true, size: true, age: true, breed: true, reactivityTags: true } } },
+      });
+      return res.json({ ...me, isSelf: true, isFriend: false });
+    }
+    const profile = await prisma.user.findUnique({
+      where: { id: uid },
+      select: { id: true, name: true, avatarUrl: true, city: true, safetyPledgedAt: true, experience: true, availability: true, dogs: { select: { id: true, name: true, size: true, age: true, breed: true, reactivityTags: true } } },
+    });
+    if (!profile) return res.status(404).json({ error: 'User not found' });
+    const follow = await prisma.follow.findUnique({
+      where: { followerId_followingId: { followerId: req.user.id, followingId: uid } },
+    });
+    res.json({ ...profile, isSelf: false, isFriend: !!follow });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

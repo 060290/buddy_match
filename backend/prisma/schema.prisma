@@ -29,6 +29,8 @@ model User {
   sentMessages     Message[] @relation("MessageSender")
   receivedMessages Message[] @relation("MessageReceiver")
   reportsCreated   Report[]
+  following        Follow[]  @relation("FollowFollower")
+  followers        Follow[]  @relation("FollowFollowing")
 }
 
 model Dog {
@@ -95,6 +97,17 @@ model Report {
   postId     String?
   post       Post?    @relation(fields: [postId], references: [id], onDelete: SetNull)
   createdAt  DateTime @default(now())
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId String
+  follower    User     @relation("FollowFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("FollowFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
 }
 
 model SupportArticle {
