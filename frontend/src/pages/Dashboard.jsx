@@ -11,9 +11,16 @@ export default function Dashboard() {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const radiusMiles = 50;
+  const radiusKm = radiusMiles * 1.60934;
+
   useEffect(() => {
+    const hasLocation = user?.lat != null && user?.lng != null;
+    const postsUrl = hasLocation
+      ? `/posts?lat=${user.lat}&lng=${user.lng}&radiusKm=${radiusKm}`
+      : '/posts';
     Promise.all([
-      api.get('/posts').then((r) => r.data),
+      api.get(postsUrl).then((r) => r.data),
       api.get('/messages/conversations').then((r) => r.data),
     ])
       .then(([posts, convos]) => {
@@ -22,7 +29,7 @@ export default function Dashboard() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.lat, user?.lng, radiusKm]);
 
   const upcomingReminders = useMemo(() => {
     const now = new Date();
@@ -60,11 +67,16 @@ export default function Dashboard() {
 
         <section className="card dashboard-map-card">
           <h2 className="dashboard-section-title">Meetups on the map</h2>
-          <p className="dashboard-section-lead">Pins show where other users are offering meetups. Click a pin for details.</p>
+          <p className="dashboard-section-lead">
+            {user?.lat != null && user?.lng != null
+              ? `Showing meetups within ${radiusMiles} miles of you. Zoom and pan are limited to this area.`
+              : 'Set your location in Profile to see meetups within 50 miles of you.'}
+          </p>
           <DashboardMap
             meetups={meetups}
             userLat={user?.lat ?? undefined}
             userLng={user?.lng ?? undefined}
+            radiusMiles={radiusMiles}
           />
         </section>
 
