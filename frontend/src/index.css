@@ -2732,7 +2732,13 @@ input, textarea {
 }
 
 .dog-log-win-btn:hover {
-  text-decoration: underline;
+  text-decoration: none;
+}
+
+.dog-panel--training a,
+.dog-panel--training a:hover,
+.dog-panel--training a:focus {
+  text-decoration: none;
 }
 
 .dog-log-win-form {
