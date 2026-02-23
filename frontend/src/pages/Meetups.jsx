@@ -5,60 +5,90 @@ import { api } from '../api';
 
 const MeetupsMap = lazy(() => import('../components/DashboardMap'));
 
-class MapErrorBoundary extends React.Component {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="meetups-map-fallback" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--text-muted)', minHeight: '200px' }}>
-          <span aria-hidden>🗺️</span>
-          <span>Map couldn’t load.</span>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
+const TABS = ['Discover', 'Hosting', 'Joined', 'Past'];
+const radiusMiles = 50;
+const radiusKm = radiusMiles * 1.60934;
+
+function getInitials(name) {
+  if (!name || !String(name).trim()) return '?';
+  return String(name).trim().split(/\s+/).map((n) => n[0]).slice(0, 2).join('').toUpperCase();
 }
 
 export default function Meetups() {
   const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
+  const [discoverPosts, setDiscoverPosts] = useState([]);
+  const [myPosts, setMyPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [myLoading, setMyLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchInput, setSearchInput] = useState(''); // user types here; we debounce into searchQuery
+  const [searchInput, setSearchInput] = useState('');
   const [userLoc, setUserLoc] = useState({ lat: null, lng: null });
+  const [viewMode, setViewMode] = useState('split'); // 'split' | 'list'
+  const [activeTab, setActiveTab] = useState('Discover');
   const debounceRef = useRef(null);
-  const radiusMiles = 50;
 
-  // Debounce search input (300ms) into searchQuery
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSearchQuery(searchInput.trim());
       debounceRef.current = null;
     }, 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [searchInput]);
 
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (searchQuery) params.set('q', searchQuery);
-    if (userLoc.lat != null && userLoc.lng != null) {
-      params.set('lat', userLoc.lat);
-      params.set('lng', userLoc.lng);
-      params.set('radiusKm', '50');
+    const lat = userLoc.lat ?? user?.lat;
+    const lng = userLoc.lng ?? user?.lng;
+    if (lat != null && lng != null) {
+      params.set('lat', lat);
+      params.set('lng', lng);
+      params.set('radiusKm', String(radiusKm));
     }
     api.get(`/posts?${params}`)
-      .then((r) => setPosts(Array.isArray(r?.data) ? r.data : []))
-      .catch(() => setPosts([]))
+      .then((r) => setDiscoverPosts(Array.isArray(r?.data) ? r.data : []))
+      .catch(() => setDiscoverPosts([]))
       .finally(() => setLoading(false));
-  }, [searchQuery, userLoc.lat, userLoc.lng]);
+  }, [searchQuery, userLoc.lat, userLoc.lng, user?.lat, user?.lng]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setMyLoading(false);
+      return;
+    }
+    setMyLoading(true);
+    api.get('/posts/mine')
+      .then((r) => setMyPosts(Array.isArray(r?.data) ? r.data : []))
+      .catch(() => setMyPosts([]))
+      .finally(() => setMyLoading(false));
+  }, [user?.id]);
+
+  const now = Date.now();
+  const discoverUpcoming = discoverPosts.filter((p) => !p.meetupAt || new Date(p.meetupAt).getTime() >= now);
+  const discoverPast = discoverPosts.filter((p) => p.meetupAt && new Date(p.meetupAt).getTime() < now);
+  const joined = discoverPosts.filter((p) => p.userRsvped);
+  const joinedUpcoming = joined.filter((p) => !p.meetupAt || new Date(p.meetupAt).getTime() >= now);
+  const joinedPast = joined.filter((p) => p.meetupAt && new Date(p.meetupAt).getTime() < now);
+  const myUpcoming = myPosts.filter((p) => !p.meetupAt || new Date(p.meetupAt).getTime() >= now);
+  const myPast = myPosts.filter((p) => p.meetupAt && new Date(p.meetupAt).getTime() < now);
+
+  let list = [];
+  let listLoading = loading;
+  if (activeTab === 'Discover') {
+    list = discoverUpcoming;
+    listLoading = loading;
+  } else if (activeTab === 'Hosting') {
+    list = myUpcoming;
+    listLoading = myLoading;
+  } else if (activeTab === 'Joined') {
+    list = joinedUpcoming;
+    listLoading = loading;
+  } else {
+    list = [...myPast, ...joinedPast];
+    listLoading = activeTab === 'Past' ? (loading || myLoading) : false;
+  }
 
   const requestLocation = () => {
     if (!navigator.geolocation) return;
@@ -68,89 +98,141 @@ export default function Meetups() {
     );
   };
 
-  const clearLocation = () => setUserLoc({ lat: null, lng: null });
+  const mapPosts = activeTab === 'Discover' ? discoverUpcoming : activeTab === 'Hosting' ? myUpcoming : activeTab === 'Joined' ? joinedUpcoming : list;
 
   return (
-    <div className="container meetups-page" style={{ paddingTop: '1.5rem' }}>
-      <section className="card meetups-map-card" style={{ marginBottom: '1.5rem' }}>
-        <h2 className="meetups-map-title">Meetups on the map</h2>
-        <p className="meetups-map-lead">
-          {user?.lat != null && user?.lng != null
-            ? `Showing meetups within ${radiusMiles} miles of you. Set your location in Profile to change.`
-            : 'Set your location in Profile to see meetups on the map.'}
-        </p>
-        <MapErrorBoundary>
-          <Suspense fallback={<div className="meetups-map-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', minHeight: '200px' }}>Loading map…</div>}>
-            <MeetupsMap
-              meetups={posts}
-              userLat={user?.lat ?? undefined}
-              userLng={user?.lng ?? undefined}
-              radiusMiles={radiusMiles}
-            />
-          </Suspense>
-        </MapErrorBoundary>
-      </section>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ margin: '0 0 1rem' }}>Meetups</h1>
-        <div className="meetups-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-          <div className="meetups-search-wrap" style={{ flex: '1 1 260px', minWidth: 0 }}>
-            <input
-              id="meetups-search"
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search by title, location, or description…"
-              className="meetups-search-input"
-              style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: 'var(--radius-chunky)', border: '1px solid var(--border)', fontSize: '1rem' }}
-              aria-label="Search meetups by title, location, or description"
-            />
+    <div className="app-page app-page--meetups">
+      <div className="meetups-layout">
+        {/* Top controls */}
+        <header className="meetups-header">
+          <div className="meetups-controls-row">
+            <div className="meetups-search-wrap">
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search meetups…"
+                className="meetups-search-input"
+                aria-label="Search meetups"
+              />
+            </div>
+            <div className="meetups-filters">
+              {user?.lat != null && user?.lng != null ? (
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setUserLoc({ lat: null, lng: null })} title="Clear location filter">
+                  Nearby · Clear
+                </button>
+              ) : (
+                <button type="button" className="btn btn-secondary btn-sm" onClick={requestLocation}>
+                  Use my location
+                </button>
+              )}
+              <button
+                type="button"
+                className={`btn btn-ghost btn-sm meetups-view-toggle ${viewMode === 'split' ? 'is-active' : ''}`}
+                onClick={() => setViewMode('split')}
+                aria-pressed={viewMode === 'split'}
+              >
+                Map
+              </button>
+              <button
+                type="button"
+                className={`btn btn-ghost btn-sm meetups-view-toggle ${viewMode === 'list' ? 'is-active' : ''}`}
+                onClick={() => setViewMode('list')}
+                aria-pressed={viewMode === 'list'}
+              >
+                List
+              </button>
+            </div>
+            <Link to="/meetups/new" className="btn btn-primary">Create meetup</Link>
           </div>
-          {userLoc.lat != null && userLoc.lng != null ? (
-            <button type="button" className="btn btn-ghost btn-sm" onClick={clearLocation} title="Show all meetups">
-              Showing nearby · Clear
-            </button>
-          ) : (
-            <button type="button" className="btn btn-secondary" onClick={requestLocation}>
-              Use my location
-            </button>
+          {/* Tabs: Discover + My meetups (Hosting, Joined, Past) */}
+          <nav className="meetups-tabs" aria-label="Meetup tabs">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                className={`meetups-tab ${activeTab === tab ? 'meetups-tab--active' : ''}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </nav>
+        </header>
+
+        {/* Split: list left, map right */}
+        <div className={`meetups-split ${viewMode === 'list' ? 'meetups-split--list-only' : ''}`}>
+          <aside className="meetups-list-col">
+            {listLoading ? (
+              <p className="meetups-empty">Loading…</p>
+            ) : list.length === 0 ? (
+              <p className="meetups-empty">
+                {activeTab === 'Discover' && 'No meetups match. Try different search or location.'}
+                {activeTab === 'Hosting' && 'You haven’t created any meetups yet.'}
+                {activeTab === 'Joined' && 'You haven’t joined any meetups yet.'}
+                {activeTab === 'Past' && 'No past meetups.'}
+                {' '}
+                {(activeTab === 'Discover' || activeTab === 'Hosting') && <Link to="/meetups/new">Create one</Link>}
+              </p>
+            ) : (
+              <ul className="meetups-card-list">
+                {list.map((p) => (
+                  <li key={p.id}>
+                    <Link to={`/meetups/${p.id}`} className="meetup-discovery-card">
+                      <div className="meetup-discovery-card-top">
+                        <span className="meetup-discovery-card-tag">Walk</span>
+                        {p.userRsvped && <span className="meetup-discovery-card-badge">Joined</span>}
+                      </div>
+                      <h3 className="meetup-discovery-card-title">{p.title}</h3>
+                      {p.meetupAt && (
+                        <p className="meetup-discovery-card-datetime">
+                          {new Date(p.meetupAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                        </p>
+                      )}
+                      {p.location && <p className="meetup-discovery-card-location">{p.location}</p>}
+                      <div className="meetup-discovery-card-meta">
+                        <span className="meetup-discovery-card-host">
+                          Host: {p.author?.name || 'Buddy'}
+                        </span>
+                        <div className="meetup-discovery-card-attending">
+                          {(p.rsvpCount > 0 || p.rsvpNames?.length) ? (
+                            <>
+                              <span className="meetup-discovery-avatars" aria-hidden>
+                                {[1, 2, 3].slice(0, Math.min(3, p.rsvpCount || p.rsvpNames?.length || 0)).map((i) => (
+                                  <span key={i} className="meetup-discovery-avatar" title={(p.rsvpNames && p.rsvpNames[i - 1]) || 'Attendee'}>
+                                    {(p.rsvpNames && p.rsvpNames[i - 1]) ? getInitials(p.rsvpNames[i - 1]) : '?'}
+                                  </span>
+                                ))}
+                              </span>
+                              <span>{p.rsvpCount ?? p.rsvpNames?.length ?? 0} attending</span>
+                            </>
+                          ) : (
+                            <span>0 attending</span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </aside>
+          {viewMode === 'split' && (
+            <div className="meetups-map-col">
+              <div className="meetups-map-sticky">
+                <Suspense fallback={<div className="meetups-map-fallback">Loading map…</div>}>
+                  <MeetupsMap
+                    meetups={mapPosts}
+                    userLat={user?.lat ?? undefined}
+                    userLng={user?.lng ?? undefined}
+                    radiusMiles={radiusMiles}
+                  />
+                </Suspense>
+              </div>
+            </div>
           )}
-          <Link to="/meetups/new" className="btn btn-primary">Create meetup</Link>
         </div>
       </div>
-
-      {loading ? (
-        <p style={{ color: 'var(--text-muted)' }}>Loading meetups…</p>
-      ) : posts.length === 0 ? (
-        <div className="card">
-          <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-            {searchQuery || userLoc.lat != null
-              ? 'No meetups match your search or location. Try different keywords or clear filters.'
-              : 'No meetups yet. Be the first to create one.'}
-            {' '}
-            {!searchQuery && userLoc.lat == null && <Link to="/meetups/new">Create a meetup</Link>}
-          </p>
-        </div>
-      ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {posts.map((p) => (
-            <li key={p.id}>
-              <Link to={`/meetups/${p.id}`} className="card" style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
-                <h3 style={{ margin: '0 0 0.5rem' }}>{p.title}</h3>
-                <p style={{ margin: '0 0 0.5rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-                  {p.body.slice(0, 160)}{p.body.length > 160 ? '…' : ''}
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                  {p.location && <span>{p.location}</span>}
-                  {p.meetupAt && <span>{new Date(p.meetupAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>}
-                  <span>{p.author?.name || 'Buddy'}</span>
-                  {p.rsvpCount > 0 && <span className="badge">{p.rsvpCount} RSVP{p.rsvpCount !== 1 ? 's' : ''}</span>}
-                  {p.userRsvped && <span className="badge">You RSVP'd</span>}
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }
