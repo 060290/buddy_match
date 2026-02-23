@@ -16,10 +16,10 @@ export default function Home() {
         <div className="landing-hero-inner">
           <div className="landing-hero-content">
             <h1 className="landing-hero-title">
-              Safe, structured meetups for shy & reactive dogs
+              Find buddies, join meetups, practice at your pace
             </h1>
             <p className="landing-hero-subtitle">
-              Size-matched meetups with people who get it.
+              Add your dog → discover meetups → practice safely.
             </p>
             <div className="landing-hero-ctas">
               <Link to="/register" className="btn btn-primary btn-lg">
@@ -30,9 +30,9 @@ export default function Home() {
               </Link>
             </div>
             <div className="landing-hero-badges">
-              <span className="landing-badge"><span aria-hidden>🐾</span> Paws first</span>
-              <span className="landing-badge"><span aria-hidden>🐕</span> Size-matched</span>
-              <span className="landing-badge"><span aria-hidden>❤️</span> Support in-app</span>
+              <span className="landing-badge"><span aria-hidden>🐕</span> Add dog profile</span>
+              <span className="landing-badge"><span aria-hidden>📍</span> Discover meetups</span>
+              <span className="landing-badge"><span aria-hidden>🐾</span> Practice safely</span>
             </div>
           </div>
 
