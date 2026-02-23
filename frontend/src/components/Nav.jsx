@@ -35,28 +35,34 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
     return (
       <aside className="app-sidebar">
         <div className="app-sidebar-header">{logo}</div>
-        <Link to="/profile" className="app-sidebar-user" title="Go to profile">
-          <span className="sidebar-avatar-link">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="" className="sidebar-avatar-img" />
-            ) : (
-              <span className="sidebar-avatar-initials">{initials}</span>
-            )}
-          </span>
-          <span className="sidebar-user-name">{user?.name || 'Buddy'}</span>
-        </Link>
-        <nav className="nav-sidebar">
-          <NavLink to="/dashboard">Home</NavLink>
+        <nav className="nav-sidebar nav-sidebar--primary" aria-label="Main">
+          <NavLink to="/dashboard" end>Home</NavLink>
+          <NavLink to="/profile#dogs">Dogs</NavLink>
           <NavLink to="/meetups">Meetups</NavLink>
-          <NavLink to="/support">Safety tips</NavLink>
           <NavLink to="/messages" className="nav-sidebar-link-with-badge">
             Messages
             {hasMessages && <span className="nav-sidebar-badge" aria-label="You have messages">!</span>}
           </NavLink>
+          <NavLink to="/profile">Profile</NavLink>
+        </nav>
+        <nav className="nav-sidebar nav-sidebar--secondary" aria-label="More">
+          <NavLink to="/support">Safety tips</NavLink>
           <NavLink to="/nearby">Nearby</NavLink>
           <NavLink to="/settings">Settings</NavLink>
-          <button type="button" className="btn btn-ghost nav-sidebar-btn" onClick={handleLogout}>Log out</button>
         </nav>
+        <div className="app-sidebar-footer">
+          <Link to="/profile" className="app-sidebar-user" title="Go to profile">
+            <span className="sidebar-avatar-link">
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="sidebar-avatar-img" />
+              ) : (
+                <span className="sidebar-avatar-initials">{initials}</span>
+              )}
+            </span>
+            <span className="sidebar-user-name">{user?.name || 'Buddy'}</span>
+          </Link>
+          <button type="button" className="btn btn-ghost nav-sidebar-btn" onClick={handleLogout}>Log out</button>
+        </div>
       </aside>
     );
   }

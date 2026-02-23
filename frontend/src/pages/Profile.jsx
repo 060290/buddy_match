@@ -437,7 +437,7 @@ export default function Profile() {
             )}
           </section>
 
-          <section className="card profile-dogs-card">
+          <section id="dogs" className="card profile-dogs-card">
             <h2 style={{ margin: 0, marginBottom: '0.75rem' }}>Your dogs</h2>
             {dogs.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>No dogs added yet. <Link to="/profile/dogs/new" className="btn btn-primary btn-sm" style={{ marginTop: '0.5rem', display: 'inline-block' }}>Add dog</Link></p>
