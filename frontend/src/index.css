@@ -220,6 +220,28 @@ input, textarea {
   color: var(--accent);
 }
 
+.nav-sidebar-link-with-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.nav-sidebar-badge {
+  flex-shrink: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 50%;
+  background: var(--warm);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .nav-sidebar-btn {
   margin-top: auto;
   width: 100%;
@@ -748,8 +770,21 @@ input, textarea {
   font-size: 0.95rem;
 }
 
-.dashboard-map-card {
+.dashboard-map-row {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.25rem;
   margin-bottom: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .dashboard-map-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-map-card {
   overflow: hidden;
 }
 
@@ -790,6 +825,17 @@ input, textarea {
 
 .dashboard-reminders-card {
   margin-bottom: 1.5rem;
+}
+
+.dashboard-reminders-card--side {
+  margin-bottom: 0;
+  position: sticky;
+  top: 1rem;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
 }
 
 .dashboard-muted {

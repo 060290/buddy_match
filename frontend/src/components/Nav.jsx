@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../api';
 
 export default function Nav({ isLoggedIn, variant = 'header' }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [hasMessages, setHasMessages] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn || variant !== 'sidebar') return;
+    api.get('/messages/conversations')
+      .then((r) => setHasMessages(Array.isArray(r.data) && r.data.length > 0))
+      .catch(() => setHasMessages(false));
+  }, [isLoggedIn, variant]);
 
   const handleLogout = () => {
     logout();
@@ -39,7 +48,10 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
           <NavLink to="/dashboard">Dashboard</NavLink>
           <NavLink to="/meetups">Meetups</NavLink>
           <NavLink to="/support">Safety tips</NavLink>
-          <NavLink to="/messages">Messages</NavLink>
+          <NavLink to="/messages" className="nav-sidebar-link-with-badge">
+            Messages
+            {hasMessages && <span className="nav-sidebar-badge" aria-label="You have messages">!</span>}
+          </NavLink>
           <NavLink to="/profile">Profile</NavLink>
           <NavLink to="/nearby">Nearby</NavLink>
           <NavLink to="/settings">Settings</NavLink>

@@ -8,7 +8,6 @@ import DashboardMap from '../components/DashboardMap';
 export default function Dashboard() {
   const { user } = useAuth();
   const [meetups, setMeetups] = useState([]);
-  const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const radiusMiles = 50;
@@ -19,15 +18,9 @@ export default function Dashboard() {
     const postsUrl = hasLocation
       ? `/posts?lat=${user.lat}&lng=${user.lng}&radiusKm=${radiusKm}`
       : '/posts';
-    Promise.all([
-      api.get(postsUrl).then((r) => r.data),
-      api.get('/messages/conversations').then((r) => r.data),
-    ])
-      .then(([posts, convos]) => {
-        setMeetups(Array.isArray(posts) ? posts : []);
-        setConversations(Array.isArray(convos) ? convos.slice(0, 5) : []);
-      })
-      .catch(() => {})
+    api.get(postsUrl)
+      .then((r) => setMeetups(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setMeetups([]))
       .finally(() => setLoading(false));
   }, [user?.lat, user?.lng, radiusKm]);
 
@@ -65,70 +58,46 @@ export default function Dashboard() {
           </Link>
         )}
 
-        <section className="card dashboard-map-card">
-          <h2 className="dashboard-section-title">Meetups on the map</h2>
-          <p className="dashboard-section-lead">
-            {user?.lat != null && user?.lng != null
-              ? `Showing meetups within ${radiusMiles} miles of you. Zoom and pan are limited to this area.`
-              : 'Set your location in Profile to see meetups within 50 miles of you.'}
-          </p>
-          <DashboardMap
-            meetups={meetups}
-            userLat={user?.lat ?? undefined}
-            userLng={user?.lng ?? undefined}
-            radiusMiles={radiusMiles}
-          />
-        </section>
-
-        <section className="card dashboard-reminders-card">
-          <div className="dashboard-section-header">
-            <h2 className="dashboard-section-title">Upcoming reminders</h2>
-            <Link to="/meetups" className="btn btn-secondary">View all</Link>
-          </div>
-          {loading ? (
-            <p className="dashboard-muted">Loading…</p>
-          ) : upcomingReminders.length === 0 ? (
-            <p className="dashboard-muted">No upcoming meetups. <Link to="/meetups">Browse meetups</Link> or create one with the + button.</p>
-          ) : (
-            <ul className="dashboard-reminders-list">
-              {upcomingReminders.map((m) => (
-                <li key={m.id} className="dashboard-reminder-item">
-                  <Link to={`/meetups/${m.id}`} className="dashboard-reminder-title">{m.title}</Link>
-                  <div className="dashboard-reminder-meta">
-                    {m.location && `${m.location} · `}
-                    {m.meetupAt ? new Date(m.meetupAt).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : 'No date set'}
-                    {m.rsvpCount > 0 && ` · ${m.rsvpCount} RSVP${m.rsvpCount !== 1 ? 's' : ''}`}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="card">
-          <div className="dashboard-section-header">
-            <h2 className="dashboard-section-title">Recent messages</h2>
-            <Link to="/messages" className="btn btn-secondary">Inbox</Link>
-          </div>
-          {loading ? (
-            <p className="dashboard-muted">Loading…</p>
-          ) : conversations.length === 0 ? (
-            <p className="dashboard-muted">No conversations yet. Find <Link to="/nearby">buddies nearby</Link> or message from a meetup.</p>
-          ) : (
-            <ul className="dashboard-list">
-              {conversations.map((c) => (
-                <li key={c.user.id} className="dashboard-list-item">
-                  <Link to={`/messages?with=${c.user.id}`} className="dashboard-list-link">{c.user.name || 'Buddy'}</Link>
-                  {c.lastMessage && (
-                    <p className="dashboard-list-meta">
-                      {c.lastMessage.fromMe && 'You: '}{c.lastMessage.content?.slice(0, 60)}{c.lastMessage.content?.length > 60 ? '…' : ''}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <div className="dashboard-map-row">
+          <section className="card dashboard-map-card">
+            <h2 className="dashboard-section-title">Meetups on the map</h2>
+            <p className="dashboard-section-lead">
+              {user?.lat != null && user?.lng != null
+                ? `Showing meetups within ${radiusMiles} miles of you. Zoom and pan are limited to this area.`
+                : 'Set your location in Profile to see meetups within 50 miles of you.'}
+            </p>
+            <DashboardMap
+              meetups={meetups}
+              userLat={user?.lat ?? undefined}
+              userLng={user?.lng ?? undefined}
+              radiusMiles={radiusMiles}
+            />
+          </section>
+          <section className="card dashboard-reminders-card dashboard-reminders-card--side">
+            <div className="dashboard-section-header">
+              <h2 className="dashboard-section-title">Upcoming reminders</h2>
+              <Link to="/meetups" className="btn btn-secondary btn-sm">View all</Link>
+            </div>
+            {loading ? (
+              <p className="dashboard-muted">Loading…</p>
+            ) : upcomingReminders.length === 0 ? (
+              <p className="dashboard-muted">No upcoming meetups. <Link to="/meetups">Browse meetups</Link> or create one with the + button.</p>
+            ) : (
+              <ul className="dashboard-reminders-list">
+                {upcomingReminders.map((m) => (
+                  <li key={m.id} className="dashboard-reminder-item">
+                    <Link to={`/meetups/${m.id}`} className="dashboard-reminder-title">{m.title}</Link>
+                    <div className="dashboard-reminder-meta">
+                      {m.location && `${m.location} · `}
+                      {m.meetupAt ? new Date(m.meetupAt).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : 'No date set'}
+                      {m.rsvpCount > 0 && ` · ${m.rsvpCount} RSVP${m.rsvpCount !== 1 ? 's' : ''}`}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

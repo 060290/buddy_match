@@ -13,7 +13,7 @@ async function requireAuth(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true, safetyPledgedAt: true },
+      select: { id: true, email: true, name: true, city: true, lat: true, lng: true, safetyPledgedAt: true },
     });
     if (!user) return res.status(401).json({ error: 'User not found' });
     req.user = user;
@@ -30,7 +30,7 @@ function optionalAuth(req, res, next) {
     if (err || !decoded) return next();
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true, safetyPledgedAt: true },
+      select: { id: true, email: true, name: true, city: true, lat: true, lng: true, safetyPledgedAt: true },
     });
     if (user) req.user = user;
     next();
