@@ -2,8 +2,6 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
-import { DogDoodleMain, DogDoodlePeek } from '../components/DogDoodles';
-import DashboardMap from '../components/DashboardMap';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -21,40 +19,37 @@ export default function Dashboard() {
       ? `/posts?lat=${user.lat}&lng=${user.lng}&radiusKm=${radiusKm}`
       : '/posts';
     api.get(postsUrl)
-      .then((r) => setMeetups(Array.isArray(r.data) ? r.data : []))
+      .then((r) => setMeetups(Array.isArray(r?.data) ? r.data : []))
       .catch(() => setMeetups([]))
       .finally(() => setLoading(false));
   }, [user?.lat, user?.lng, radiusKm]);
 
   useEffect(() => {
     api.get('/dogs')
-      .then((r) => setDogs(Array.isArray(r.data) ? r.data : []))
+      .then((r) => setDogs(Array.isArray(r?.data) ? r.data : []))
       .catch(() => setDogs([]))
       .finally(() => setDogsLoading(false));
   }, [user?.id]);
 
   const upcomingReminders = useMemo(() => {
+    if (!Array.isArray(meetups)) return [];
     const now = new Date();
     return meetups
-      .filter((m) => m.meetupAt && new Date(m.meetupAt) >= now)
+      .filter((m) => m && m.meetupAt && new Date(m.meetupAt) >= now)
       .slice(0, 5);
   }, [meetups]);
+
+  const userName = user?.name != null && typeof user.name === 'string' ? user.name : '';
 
   return (
     <div className="app-page">
       <div className="app-page-content app-page-content--dashboard">
         <div className="dashboard-hero">
           <div className="dashboard-welcome">
-            <h1>Hi{user?.name ? `, ${user.name}` : ''}</h1>
+            <h1>Hi{userName ? `, ${userName}` : ''}</h1>
             <p className="dashboard-tagline">
               Here’s a quick overview of your community activity.
             </p>
-          </div>
-          <div className="dashboard-doodle" aria-hidden>
-            <DogDoodleMain className="dashboard-doodle-main" />
-            <div className="dashboard-doodle-peek">
-              <DogDoodlePeek />
-            </div>
           </div>
         </div>
 
@@ -72,15 +67,13 @@ export default function Dashboard() {
             <h2 className="dashboard-section-title">Meetups on the map</h2>
             <p className="dashboard-section-lead">
               {user?.lat != null && user?.lng != null
-                ? `Showing meetups within ${radiusMiles} miles of you. Zoom and pan are limited to this area.`
-                : 'Set your location in Profile to see meetups within 50 miles of you.'}
+                ? `Meetups within ${radiusMiles} miles of you.`
+                : 'Set your location in Profile to see meetups near you.'}
             </p>
-            <DashboardMap
-              meetups={meetups}
-              userLat={user?.lat ?? undefined}
-              userLng={user?.lng ?? undefined}
-              radiusMiles={radiusMiles}
-            />
+            <div className="dashboard-map-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--text-muted)', minHeight: '200px' }}>
+              <span aria-hidden>🗺️</span>
+              <Link to="/meetups" className="btn btn-secondary btn-sm">Browse meetups</Link>
+            </div>
           </section>
           <div className="dashboard-side-col">
             <section className="card dashboard-reminders-card dashboard-reminders-card--side">
@@ -94,12 +87,12 @@ export default function Dashboard() {
                 <p className="dashboard-muted">No upcoming meetups. <Link to="/meetups">Browse meetups</Link> or create one with the + button.</p>
               ) : (
                 <ul className="dashboard-reminders-list">
-                  {upcomingReminders.map((m) => (
-                    <li key={m.id} className="dashboard-reminder-item">
-                      <Link to={`/meetups/${m.id}`} className="dashboard-reminder-title">{m.title}</Link>
+                  {upcomingReminders.map((m, i) => (
+                    <li key={m?.id ?? i} className="dashboard-reminder-item">
+                      <Link to={`/meetups/${m?.id ?? ''}`} className="dashboard-reminder-title">{m?.title ?? 'Meetup'}</Link>
                       <div className="dashboard-reminder-meta">
                         {m.location && `${m.location} · `}
-                        {m.meetupAt ? new Date(m.meetupAt).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : 'No date set'}
+                        {m.meetupAt ? new Date(m.meetupAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : 'No date set'}
                         {m.rsvpCount > 0 && ` · ${m.rsvpCount} RSVP${m.rsvpCount !== 1 ? 's' : ''}`}
                       </div>
                     </li>
@@ -119,30 +112,30 @@ export default function Dashboard() {
                 <p className="dashboard-muted">No dogs yet. <Link to="/profile">Add a dog</Link> on your profile so buddies know who they might meet.</p>
               ) : (
                 <div className="dashboard-dog-cards">
-                  {dogs.map((dog) => (
-                    <div key={dog.id} className="dashboard-dog-card">
+                  {dogs.map((dog, i) => (
+                    <div key={dog?.id ?? i} className="dashboard-dog-card">
                       <div className="dashboard-dog-card-header">
                         <span className="dashboard-dog-card-icon" aria-hidden>🐕</span>
-                        <strong className="dashboard-dog-card-name">{dog.name}</strong>
+                        <strong className="dashboard-dog-card-name">{dog?.name ?? 'Dog'}</strong>
                       </div>
                       <dl className="dashboard-dog-card-details">
                         <div className="dashboard-dog-card-row">
                           <dt>Size</dt>
-                          <dd>{dog.size}</dd>
+                          <dd>{dog?.size ?? '—'}</dd>
                         </div>
-                        {dog.age && (
+                        {dog?.age && (
                           <div className="dashboard-dog-card-row">
                             <dt>Age</dt>
                             <dd>{dog.age}</dd>
                           </div>
                         )}
-                        {dog.breed && (
+                        {dog?.breed && (
                           <div className="dashboard-dog-card-row">
                             <dt>Breed</dt>
                             <dd>{dog.breed}</dd>
                           </div>
                         )}
-                        {dog.reactivityTags && (
+                        {dog?.reactivityTags && (
                           <div className="dashboard-dog-card-row">
                             <dt>Reactivity</dt>
                             <dd>{dog.reactivityTags}</dd>

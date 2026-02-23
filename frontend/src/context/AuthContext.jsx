@@ -9,7 +9,10 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     api.get('/auth/me')
-      .then((res) => setUser(res.data))
+      .then((res) => {
+        const u = res?.data;
+        setUser(u && typeof u === 'object' && !Array.isArray(u) ? u : null);
+      })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);

@@ -90,7 +90,7 @@ export default function DashboardMap({ meetups = [], userLat, userLng, radiusMil
               {m.location && <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{m.location}</div>}
               {m.meetupAt && (
                 <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                  {new Date(m.meetupAt).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                  {new Date(m.meetupAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                 </div>
               )}
             </Popup>

@@ -100,7 +100,7 @@ export default function Meetups() {
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                   {p.location && <span>{p.location}</span>}
-                  {p.meetupAt && <span>{new Date(p.meetupAt).toLocaleDateString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>}
+                  {p.meetupAt && <span>{new Date(p.meetupAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>}
                   <span>{p.author?.name || 'Buddy'}</span>
                   {p.rsvpCount > 0 && <span className="badge">{p.rsvpCount} RSVP{p.rsvpCount !== 1 ? 's' : ''}</span>}
                   {p.userRsvped && <span className="badge">You RSVP'd</span>}

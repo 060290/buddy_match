@@ -28,8 +28,9 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
   );
 
   if (variant === 'sidebar' && isLoggedIn) {
-    const initials = user?.name
-      ? user.name.trim().split(/\s+/).map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+    const nameStr = (user?.name && typeof user.name === 'string') ? user.name.trim() : '';
+    const initials = nameStr
+      ? nameStr.split(/\s+/).map((n) => n[0]).slice(0, 2).join('').toUpperCase()
       : user?.email?.[0]?.toUpperCase() ?? '?';
     return (
       <aside className="app-sidebar">

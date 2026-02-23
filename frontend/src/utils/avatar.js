@@ -1,24 +1,20 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-// Set worker so PDF.js can parse PDFs (required when using getDocument)
-let workerSrcSet = false;
-function setPdfWorker() {
-  if (workerSrcSet) return;
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
-  workerSrcSet = true;
-}
-
 const MAX_AVATAR_SIZE = 400;
 const AVATAR_QUALITY = 0.88;
 
 /**
  * Render first page of a PDF to a data URL (JPEG), resized for avatar.
+ * PDF.js is loaded only when needed so it cannot break initial app load.
  * @param {File} file - PDF file
  * @returns {Promise<string>}
  */
 async function pdfFirstPageToDataUrl(file) {
-  setPdfWorker();
+  const [pdfjsModule, workerModule] = await Promise.all([
+    import('pdfjs-dist'),
+    import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+  ]);
+  const pdfjsLib = pdfjsModule.default ?? pdfjsModule;
+  const pdfWorkerUrl = workerModule.default ?? workerModule;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   const page = await pdf.getPage(1);
