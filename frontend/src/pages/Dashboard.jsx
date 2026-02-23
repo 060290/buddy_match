@@ -27,8 +27,10 @@ class MapErrorBoundary extends React.Component {
 export default function Dashboard() {
   const { user } = useAuth();
   const [meetups, setMeetups] = useState([]);
+  const [myMeetups, setMyMeetups] = useState([]);
   const [dogs, setDogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [myMeetupsLoading, setMyMeetupsLoading] = useState(true);
   const [dogsLoading, setDogsLoading] = useState(true);
 
   const radiusMiles = 50;
@@ -46,19 +48,32 @@ export default function Dashboard() {
   }, [user?.lat, user?.lng, radiusKm]);
 
   useEffect(() => {
+    api.get('/posts/mine')
+      .then((r) => setMyMeetups(Array.isArray(r?.data) ? r.data : []))
+      .catch(() => setMyMeetups([]))
+      .finally(() => setMyMeetupsLoading(false));
+  }, [user?.id]);
+
+  useEffect(() => {
     api.get('/dogs')
       .then((r) => setDogs(Array.isArray(r?.data) ? r.data : []))
       .catch(() => setDogs([]))
       .finally(() => setDogsLoading(false));
   }, [user?.id]);
 
-  const upcomingReminders = useMemo(() => {
+  const upcomingFromOthers = useMemo(() => {
     if (!Array.isArray(meetups)) return [];
     const now = new Date();
     return meetups
       .filter((m) => m && m.meetupAt && new Date(m.meetupAt) >= now)
       .slice(0, 5);
   }, [meetups]);
+
+  const myUpcoming = useMemo(() => {
+    if (!Array.isArray(myMeetups)) return [];
+    const now = new Date();
+    return myMeetups.filter((m) => m && m.meetupAt && new Date(m.meetupAt) >= now);
+  }, [myMeetups]);
 
   const userName = user?.name != null && typeof user.name === 'string' ? user.name : '';
 
@@ -103,73 +118,82 @@ export default function Dashboard() {
             </MapErrorBoundary>
           </section>
           <div className="dashboard-side-col">
-            <section className="card dashboard-reminders-card dashboard-reminders-card--side">
-              <div className="dashboard-section-header">
-                <h2 className="dashboard-section-title">Upcoming reminders</h2>
-                <Link to="/meetups" className="btn btn-secondary btn-sm">View all</Link>
+            <section className="dashboard-panel dashboard-panel--mine">
+              <div className="dashboard-panel-head">
+                <h2 className="dashboard-panel-title">Your meetups</h2>
+                <Link to="/meetups/new" className="dashboard-panel-action">Create</Link>
               </div>
-              {loading ? (
-                <p className="dashboard-muted">Loading…</p>
-              ) : upcomingReminders.length === 0 ? (
-                <p className="dashboard-muted">No upcoming meetups. <Link to="/meetups">Browse meetups</Link> or create one with the + button.</p>
+              {myMeetupsLoading ? (
+                <p className="dashboard-empty">Loading…</p>
+              ) : myUpcoming.length === 0 && (!Array.isArray(myMeetups) || myMeetups.length === 0) ? (
+                <p className="dashboard-empty">No meetups yet. <Link to="/meetups/new">Create one</Link> to invite others.</p>
+              ) : myUpcoming.length === 0 ? (
+                <p className="dashboard-empty">No upcoming. <Link to="/meetups/new">Create one</Link>.</p>
               ) : (
-                <ul className="dashboard-reminders-list">
-                  {upcomingReminders.map((m, i) => (
-                    <li key={m?.id ?? i} className="dashboard-reminder-item">
-                      <Link to={`/meetups/${m?.id ?? ''}`} className="dashboard-reminder-title">{m?.title ?? 'Meetup'}</Link>
-                      <div className="dashboard-reminder-meta">
-                        {m.location && `${m.location} · `}
-                        {m.meetupAt ? new Date(m.meetupAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : 'No date set'}
-                        {m.rsvpCount > 0 && ` · ${m.rsvpCount} RSVP${m.rsvpCount !== 1 ? 's' : ''}`}
-                      </div>
-                    </li>
+                <div className="dashboard-cards">
+                  {myUpcoming.map((m, i) => (
+                    <Link key={m?.id ?? i} to={`/meetups/${m?.id ?? ''}`} className="dashboard-card dashboard-card--mine">
+                      <span className="dashboard-card-title">{m?.title ?? 'Meetup'}</span>
+                      {(m?.location || m?.meetupAt) && (
+                        <span className="dashboard-card-meta">
+                          {m?.location && <span>{m.location}</span>}
+                          {m?.meetupAt && <span>{new Date(m.meetupAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</span>}
+                        </span>
+                      )}
+                      <span className="dashboard-card-badge dashboard-card-badge--going">
+                        {m?.rsvpCount ? `${m.rsvpCount} going` : '0 going'}
+                      </span>
+                      {m?.rsvpNames?.length > 0 && (
+                        <span className="dashboard-card-names">{m.rsvpNames.slice(0, 3).join(', ')}{m.rsvpNames.length > 3 ? ` +${m.rsvpNames.length - 3}` : ''}</span>
+                      )}
+                    </Link>
                   ))}
-                </ul>
+                </div>
               )}
             </section>
 
-            <section className="card dashboard-dogs-card">
-              <div className="dashboard-section-header">
-                <h2 className="dashboard-section-title">Your dogs</h2>
-                <Link to="/profile" className="btn btn-secondary btn-sm">Edit</Link>
+            <section className="dashboard-panel">
+              <div className="dashboard-panel-head">
+                <h2 className="dashboard-panel-title">Join a meetup</h2>
+                <Link to="/meetups" className="dashboard-panel-action">Browse</Link>
+              </div>
+              {loading ? (
+                <p className="dashboard-empty">Loading…</p>
+              ) : upcomingFromOthers.length === 0 ? (
+                <p className="dashboard-empty">None nearby right now. <Link to="/meetups">Browse all</Link> or create your own.</p>
+              ) : (
+                <div className="dashboard-cards">
+                  {upcomingFromOthers.map((m, i) => (
+                    <Link key={m?.id ?? i} to={`/meetups/${m?.id ?? ''}`} className="dashboard-card">
+                      <span className="dashboard-card-title">{m?.title ?? 'Meetup'}</span>
+                      <span className="dashboard-card-meta">
+                        {m?.location && <span>{m.location}</span>}
+                        {m?.meetupAt && <span>{new Date(m.meetupAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</span>}
+                        {m?.rsvpCount > 0 && <span>{m.rsvpCount} going</span>}
+                      </span>
+                      {m?.userRsvped && <span className="dashboard-card-badge">You’re in</span>}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="dashboard-panel">
+              <div className="dashboard-panel-head">
+                <h2 className="dashboard-panel-title">Your dogs</h2>
+                <Link to="/profile" className="dashboard-panel-action">Edit</Link>
               </div>
               {dogsLoading ? (
-                <p className="dashboard-muted">Loading…</p>
+                <p className="dashboard-empty">Loading…</p>
               ) : dogs.length === 0 ? (
-                <p className="dashboard-muted">No dogs yet. <Link to="/profile">Add a dog</Link> on your profile so buddies know who they might meet.</p>
+                <p className="dashboard-empty"><Link to="/profile">Add a dog</Link> so buddies know who they might meet.</p>
               ) : (
-                <div className="dashboard-dog-cards">
+                <div className="dashboard-dog-list">
                   {dogs.map((dog, i) => (
-                    <div key={dog?.id ?? i} className="dashboard-dog-card">
-                      <div className="dashboard-dog-card-header">
-                        <span className="dashboard-dog-card-icon" aria-hidden>🐕</span>
-                        <strong className="dashboard-dog-card-name">{dog?.name ?? 'Dog'}</strong>
-                      </div>
-                      <dl className="dashboard-dog-card-details">
-                        <div className="dashboard-dog-card-row">
-                          <dt>Size</dt>
-                          <dd>{dog?.size ?? '—'}</dd>
-                        </div>
-                        {dog?.age && (
-                          <div className="dashboard-dog-card-row">
-                            <dt>Age</dt>
-                            <dd>{dog.age}</dd>
-                          </div>
-                        )}
-                        {dog?.breed && (
-                          <div className="dashboard-dog-card-row">
-                            <dt>Breed</dt>
-                            <dd>{dog.breed}</dd>
-                          </div>
-                        )}
-                        {dog?.reactivityTags && (
-                          <div className="dashboard-dog-card-row">
-                            <dt>Reactivity</dt>
-                            <dd>{dog.reactivityTags}</dd>
-                          </div>
-                        )}
-                      </dl>
-                    </div>
+                    <Link key={dog?.id ?? i} to={`/profile/dogs/${dog?.id ?? ''}`} className="dashboard-dog-pill">
+                      <span className="dashboard-dog-pill-name">{dog?.name ?? 'Dog'}</span>
+                      <span className="dashboard-dog-pill-size">{dog?.size ?? '—'}</span>
+                    </Link>
                   ))}
                 </div>
               )}

@@ -46,6 +46,26 @@ router.get('/', optionalAuth, async (req, res) => {
   }
 });
 
+router.get('/mine', requireAuth, async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      where: { authorId: req.user.id },
+      orderBy: { meetupAt: 'asc' },
+      include: {
+        rsvps: { include: { user: { select: { id: true, name: true } } } },
+        _count: { select: { rsvps: true } },
+      },
+    });
+    res.json(posts.map((p) => ({
+      ...p,
+      rsvpCount: p._count.rsvps,
+      rsvpNames: p.rsvps.map((r) => r.user?.name || 'Buddy').filter(Boolean),
+    })));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const post = await prisma.post.findUnique({
