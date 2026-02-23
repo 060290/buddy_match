@@ -429,6 +429,65 @@ input, textarea {
   min-width: 200px;
 }
 
+.profile-photo-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.profile-photo-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-card);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.profile-photo-zone:hover,
+.profile-photo-zone:focus {
+  outline: none;
+  background: var(--accent-soft);
+}
+
+.profile-photo-zone--drag {
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.profile-photo-zone .profile-picture-wrap {
+  margin: 0;
+}
+
+.profile-photo-zone-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.profile-remove-photo {
+  margin-bottom: 0.25rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: var(--accent-hover);
+}
+
 .settings-section {
   margin-bottom: 1.5rem;
 }

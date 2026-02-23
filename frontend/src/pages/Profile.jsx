@@ -7,6 +7,7 @@ export default function Profile() {
   const { user, refreshMe } = useAuth();
   const location = useLocation();
   const pledgeRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [profile, setProfile] = useState(null);
   const [dogs, setDogs] = useState([]);
   const [form, setForm] = useState({ name: '', avatarUrl: '', city: '', lat: '', lng: '', experience: '', availability: '' });
@@ -14,6 +15,9 @@ export default function Profile() {
   const [pledging, setPledging] = useState(false);
   const [message, setMessage] = useState('');
   const [loadError, setLoadError] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [showPasteLink, setShowPasteLink] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     if (location.hash === '#safety-pledge' && pledgeRef.current) {
@@ -44,7 +48,90 @@ export default function Profile() {
       });
   }, [user?.id]);
 
-  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    setUploadError('');
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const MAX_AVATAR_SIZE = 400;
+  const AVATAR_QUALITY = 0.88;
+
+  function resizeImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        const scale = Math.min(1, MAX_AVATAR_SIZE / Math.max(w, h));
+        const cw = Math.round(w * scale);
+        const ch = Math.round(h * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = cw;
+        canvas.height = ch;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, cw, ch);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('Could not process image'));
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('Could not read image'));
+            reader.readAsDataURL(blob);
+          },
+          'image/jpeg',
+          AVATAR_QUALITY
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Invalid image file'));
+      };
+      img.src = url;
+    });
+  }
+
+  async function handleFile(files) {
+    setUploadError('');
+    const file = files && files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please choose an image file (e.g. JPG or PNG).');
+      return;
+    }
+    try {
+      const dataUrl = await resizeImage(file);
+      setForm((f) => ({ ...f, avatarUrl: dataUrl }));
+    } catch (err) {
+      setUploadError(err.message || 'Could not process image');
+    }
+  }
+
+  function onFileInputChange(e) {
+    handleFile(e.target.files);
+    e.target.value = '';
+  }
+
+  function onDrop(e) {
+    e.preventDefault();
+    setDragOver(false);
+    handleFile(e.dataTransfer.files);
+  }
+
+  function onDragOver(e) {
+    e.preventDefault();
+    setDragOver(true);
+  }
+
+  function onDragLeave() {
+    setDragOver(false);
+  }
+
+  function removePhoto() {
+    setForm((f) => ({ ...f, avatarUrl: '' }));
+    setUploadError('');
+  }
 
   const saveProfile = async (e) => {
     e.preventDefault();
@@ -114,20 +201,53 @@ export default function Profile() {
 
           <div className="profile-picture-card card">
             <div className="profile-picture-row">
-              <div className="profile-picture-wrap">
-                {form.avatarUrl ? (
-                  <img src={form.avatarUrl} alt="" className="profile-picture-img" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('profile-picture-fallback--show'); }} />
-                ) : null}
-                <span className={`profile-picture-fallback ${form.avatarUrl ? '' : 'profile-picture-fallback--show'}`} aria-hidden>
-                  {getInitials(form.name, profile.email)}
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                className="profile-photo-input"
+                aria-label="Upload profile photo"
+                onChange={onFileInputChange}
+              />
+              <div
+                className={`profile-photo-zone ${dragOver ? 'profile-photo-zone--drag' : ''}`}
+                onClick={() => fileInputRef.current?.click()}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
+                aria-label="Upload or change profile photo"
+              >
+                <div className="profile-picture-wrap">
+                  {form.avatarUrl ? (
+                    <img src={form.avatarUrl} alt="" className="profile-picture-img" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('profile-picture-fallback--show'); }} />
+                  ) : null}
+                  <span className={`profile-picture-fallback ${form.avatarUrl ? '' : 'profile-picture-fallback--show'}`} aria-hidden>
+                    {getInitials(form.name, profile.email)}
+                  </span>
+                </div>
+                <span className="profile-photo-zone-label">
+                  {form.avatarUrl ? 'Change photo' : 'Upload photo'}
                 </span>
               </div>
               <div className="profile-picture-form">
-                <div className="form-group">
-                  <label>Profile picture URL</label>
-                  <input type="url" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://…" />
-                </div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>Paste a link to your photo. It will appear in the sidebar and on your profile.</p>
+                {form.avatarUrl && (
+                  <button type="button" className="btn btn-ghost btn-sm profile-remove-photo" onClick={removePhoto}>
+                    Remove photo
+                  </button>
+                )}
+                {uploadError && <p className="error-msg" style={{ marginTop: '0.5rem' }}>{uploadError}</p>}
+                <button type="button" className="link-button" onClick={() => setShowPasteLink(!showPasteLink)} style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                  {showPasteLink ? 'Hide link' : 'Or paste an image link'}
+                </button>
+                {showPasteLink && (
+                  <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                    <label>Image URL</label>
+                    <input type="url" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://…" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
