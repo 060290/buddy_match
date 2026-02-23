@@ -1,0 +1,20 @@
+---
+description: After making code changes, provide terminal commands to commit and push
+alwaysApply: true
+---
+
+# Git workflow after changes
+
+Whenever you make or suggest code changes for the user, end your response with the exact terminal commands they can run to commit and push. Assume they are in the project root (`~/Desktop/buddy_match` or the workspace root).
+
+**Format to provide:**
+
+```bash
+cd ~/Desktop/buddy_match
+git add -A
+git commit -m "Short descriptive message for the change"
+git push
+```
+
+- Use a concise, imperative commit message that describes what was done (e.g. "Add dark mode toggle", "Fix login validation").
+- If the repo has no remote yet, give the commit commands only and note they can add a remote and push when ready.
