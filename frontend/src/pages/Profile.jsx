@@ -18,6 +18,7 @@ export default function Profile() {
   const [message, setMessage] = useState('');
   const [loadError, setLoadError] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [showPasteLink, setShowPasteLink] = useState(false);
   const [uploadError, setUploadError] = useState('');
 
@@ -220,25 +221,14 @@ export default function Profile() {
           <p className="app-page-lead">Manage your account and location so buddies can find you.</p>
 
           <div className="profile-picture-card card">
-            <div className="profile-picture-row">
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                className="profile-photo-input"
-                aria-label="Upload profile photo"
-                onChange={onFileInputChange}
-              />
+            {!showPhotoOptions ? (
               <div
-                className={`profile-photo-zone ${dragOver ? 'profile-photo-zone--drag' : ''}`}
-                onClick={() => fileInputRef.current?.click()}
-                onDrop={onDrop}
-                onDragOver={onDragOver}
-                onDragLeave={onDragLeave}
+                className="profile-photo-preview"
+                onClick={() => setShowPhotoOptions(true)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
-                aria-label="Upload or change profile photo"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowPhotoOptions(true); } }}
+                aria-label="Change profile photo"
               >
                 <div className="profile-picture-wrap">
                   {form.avatarUrl ? (
@@ -248,33 +238,71 @@ export default function Profile() {
                     {getInitials(form.name, profile.email)}
                   </span>
                 </div>
-                <span className="profile-photo-zone-label">
-                  {form.avatarUrl ? 'Change photo' : 'Upload photo'}
+                <span className="profile-photo-preview-overlay">
+                  <span className="profile-photo-camera-icon" aria-hidden>📷</span>
+                  <span>Change photo</span>
                 </span>
               </div>
-              <div className="profile-picture-form">
-                <p className="profile-photo-hint">Profile picture is saved separately from the rest of your profile.</p>
-                <button type="button" className="btn btn-primary btn-sm" onClick={savePhoto} disabled={photoSaving}>
-                  {photoSaving ? 'Saving…' : 'Save photo'}
-                </button>
-                {form.avatarUrl && (
-                  <button type="button" className="btn btn-ghost btn-sm profile-remove-photo" onClick={removePhoto}>
-                    Remove photo
-                  </button>
-                )}
-                {photoMessage && <p className={photoMessage.startsWith('Photo saved') ? 'profile-photo-success' : 'error-msg'} style={{ marginTop: '0.5rem' }}>{photoMessage}</p>}
-                {uploadError && <p className="error-msg" style={{ marginTop: '0.5rem' }}>{uploadError}</p>}
-                <button type="button" className="link-button" onClick={() => setShowPasteLink(!showPasteLink)} style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
-                  {showPasteLink ? 'Hide link' : 'Or paste an image link'}
-                </button>
-                {showPasteLink && (
-                  <div className="form-group" style={{ marginTop: '0.75rem' }}>
-                    <label>Image URL</label>
-                    <input type="url" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://…" />
+            ) : (
+              <div className="profile-picture-row">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  className="profile-photo-input"
+                  aria-label="Upload profile photo"
+                  onChange={onFileInputChange}
+                />
+                <div
+                  className={`profile-photo-zone ${dragOver ? 'profile-photo-zone--drag' : ''}`}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDrop={onDrop}
+                  onDragOver={onDragOver}
+                  onDragLeave={onDragLeave}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
+                  aria-label="Upload or change profile photo"
+                >
+                  <div className="profile-picture-wrap">
+                    {form.avatarUrl ? (
+                      <img src={form.avatarUrl} alt="" className="profile-picture-img" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('profile-picture-fallback--show'); }} />
+                    ) : null}
+                    <span className={`profile-picture-fallback ${form.avatarUrl ? '' : 'profile-picture-fallback--show'}`} aria-hidden>
+                      {getInitials(form.name, profile.email)}
+                    </span>
                   </div>
-                )}
+                  <span className="profile-photo-zone-label">
+                    {form.avatarUrl ? 'Change photo' : 'Upload photo'}
+                  </span>
+                </div>
+                <div className="profile-picture-form">
+                  <button type="button" className="link-button profile-photo-done" onClick={() => setShowPhotoOptions(false)}>
+                    Done
+                  </button>
+                  <p className="profile-photo-hint">Profile picture is saved separately from the rest of your profile.</p>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={savePhoto} disabled={photoSaving}>
+                    {photoSaving ? 'Saving…' : 'Save photo'}
+                  </button>
+                  {form.avatarUrl && (
+                    <button type="button" className="btn btn-ghost btn-sm profile-remove-photo" onClick={removePhoto}>
+                      Remove photo
+                    </button>
+                  )}
+                  {photoMessage && <p className={photoMessage.startsWith('Photo saved') ? 'profile-photo-success' : 'error-msg'} style={{ marginTop: '0.5rem' }}>{photoMessage}</p>}
+                  {uploadError && <p className="error-msg" style={{ marginTop: '0.5rem' }}>{uploadError}</p>}
+                  <button type="button" className="link-button" onClick={() => setShowPasteLink(!showPasteLink)} style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                    {showPasteLink ? 'Hide link' : 'Or paste an image link'}
+                  </button>
+                  {showPasteLink && (
+                    <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                      <label>Image URL</label>
+                      <input type="url" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://…" />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div ref={pledgeRef} id="safety-pledge">
