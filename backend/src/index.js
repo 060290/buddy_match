@@ -2,6 +2,11 @@ require('dotenv').config();
 
 const path = require('path');
 
+// Use absolute path for SQLite so the DB is always writable (avoids "readonly database" when cwd differs)
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'file:' + path.resolve(path.join(__dirname, '..', 'prisma', 'dev.db'));
+}
+
 const PORT = process.env.PORT || 3001;
 
 try {
