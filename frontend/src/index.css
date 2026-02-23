@@ -924,6 +924,40 @@ input, textarea {
   resize: vertical;
 }
 
+.location-suggestions {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  max-height: 220px;
+  overflow-y: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 10;
+}
+
+.location-suggestion-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 1rem;
+  border: none;
+  background: none;
+  font-size: 0.95rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.location-suggestion-btn:hover {
+  background: var(--accent-soft);
+}
+
 .card {
   background: var(--surface);
   border-radius: var(--radius-card);

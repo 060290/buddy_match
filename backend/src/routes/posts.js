@@ -6,8 +6,19 @@ const prisma = new PrismaClient();
 
 router.get('/', optionalAuth, async (req, res) => {
   try {
-    const { lat, lng, radiusKm = 100 } = req.query;
+    const { lat, lng, radiusKm = 100, q } = req.query;
+    const search = typeof q === 'string' && q.trim().length > 0 ? q.trim() : null;
+    const where = search
+      ? {
+          OR: [
+            { title: { contains: search } },
+            { body: { contains: search } },
+            { location: { contains: search } },
+          ],
+        }
+      : {};
     const posts = await prisma.post.findMany({
+      where,
       orderBy: { meetupAt: 'asc' },
       include: {
         author: { select: { id: true, name: true, city: true } },

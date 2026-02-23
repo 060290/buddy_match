@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { searchPlaces } from '../utils/geocode';
 
 export default function CreateMeetup() {
   const navigate = useNavigate();
@@ -14,14 +15,60 @@ export default function CreateMeetup() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [locationFocused, setLocationFocused] = useState(false);
+  const [geocodeLoading, setGeocodeLoading] = useState(false);
+  const debounceRef = useRef(null);
+  const wrapperRef = useRef(null);
 
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
+  // Location autocomplete: debounced search, show suggestions
+  useEffect(() => {
+    const raw = (form.location || '').trim();
+    if (raw.length < 2) {
+      setLocationSuggestions([]);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null;
+      setGeocodeLoading(true);
+      searchPlaces(raw)
+        .then((list) => setLocationSuggestions(list))
+        .catch(() => setLocationSuggestions([]))
+        .finally(() => setGeocodeLoading(false));
+    }, 400);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [form.location]);
+
+  const pickPlace = (place) => {
+    setForm((f) => ({
+      ...f,
+      location: place.display_name,
+      lat: place.lat,
+      lng: place.lon,
+    }));
+    setLocationSuggestions([]);
+    setLocationFocused(false);
+  };
+
   const useMyLocation = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported');
+      return;
+    }
+    setError('');
     navigator.geolocation.getCurrentPosition(
-      (pos) => setForm((f) => ({ ...f, lat: pos.coords.latitude, lng: pos.coords.longitude })),
-      () => setError('Could not get location')
+      (pos) => setForm((f) => ({
+        ...f,
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        location: f.location || 'Current location',
+      })),
+      () => setError('Could not get your location')
     );
   };
 
@@ -63,23 +110,40 @@ export default function CreateMeetup() {
           <label>Description *</label>
           <textarea name="body" value={form.body} onChange={handleChange} required placeholder="Describe the plan, what to bring, and any rules (distance, one dog per person, etc.)." />
         </div>
-        <div className="form-group">
-          <label>Location (address or place name)</label>
-          <input type="text" name="location" value={form.location} onChange={handleChange} placeholder="e.g. Riverside Park, north entrance" />
+        <div className="form-group" ref={wrapperRef} style={{ position: 'relative' }}>
+          <label>Location</label>
+          <input
+            type="text"
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            onFocus={() => setLocationFocused(true)}
+            onBlur={() => setTimeout(() => setLocationFocused(false), 200)}
+            placeholder="Search for a place or address (e.g. Riverside Park, Portland)"
+            autoComplete="off"
+          />
+          {geocodeLoading && (
+            <span className="location-search-hint" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>Searching…</span>
+          )}
+          {locationFocused && locationSuggestions.length > 0 && (
+            <ul className="location-suggestions" aria-label="Location suggestions">
+              {locationSuggestions.map((place, i) => (
+                <li key={i}>
+                  <button type="button" className="location-suggestion-btn" onClick={() => pickPlace(place)}>
+                    {place.display_name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="form-hint" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: 0 }}>
+            Type to search for a place; pick a suggestion to set the map pin. Or use the button below for your current location.
+          </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <button type="button" className="btn btn-secondary" onClick={useMyLocation}>Use my location</button>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Stores lat/lng for map</span>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div className="form-group">
-            <label>Latitude</label>
-            <input type="number" step="any" name="lat" value={form.lat} onChange={handleChange} placeholder="e.g. 45.52" />
-          </div>
-          <div className="form-group">
-            <label>Longitude</label>
-            <input type="number" step="any" name="lng" value={form.lng} onChange={handleChange} placeholder="e.g. -122.68" />
-          </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <button type="button" className="btn btn-secondary" onClick={useMyLocation}>
+            Use my current location
+          </button>
         </div>
         <div className="form-group">
           <label>Date & time</label>
