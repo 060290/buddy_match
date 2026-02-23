@@ -1910,6 +1910,487 @@ input, textarea {
   }
 }
 
+/* ========== Dogs page (grid of dog cards + Add dog) ========== */
+.app-page--dogs {
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+.dogs-page-content {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.dogs-page-header {
+  margin-bottom: 1.75rem;
+}
+
+.dogs-page-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--heading);
+}
+
+.dogs-page-tagline {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.dogs-empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.dogs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.dog-card {
+  background: var(--surface);
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.dog-card:hover {
+  box-shadow: var(--shadow-3d);
+  transform: translateY(-3px);
+  border-color: var(--accent-muted);
+  color: inherit;
+  text-decoration: none;
+}
+
+.dog-card-photo {
+  aspect-ratio: 1;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.dog-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dog-card-placeholder {
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+.dog-card-body {
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dog-card-name {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.dog-card-breed {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.dog-card-status {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 0.2rem;
+}
+
+.dog-card-focus {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.dog-card-focus-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.dog-card-focus-value {
+  font-size: 0.85rem;
+  color: var(--text);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dog-card--add {
+  min-height: 180px;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg);
+  border-style: dashed;
+}
+
+.dog-card--add:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-muted);
+}
+
+.dog-card-add-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.dog-card-add-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+.dog-card-add-text {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+/* ========== Dog profile page (single dog layout) ========== */
+.app-page--dog-profile {
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+.dog-profile-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.dog-profile-back {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.dog-profile-back:hover {
+  text-decoration: underline;
+  color: var(--accent);
+}
+
+/* Identity hero */
+.dog-hero {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 1.75rem 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 1.5rem;
+}
+
+.dog-hero-photo-wrap {
+  flex-shrink: 0;
+}
+
+.dog-hero-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dog-hero-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dog-hero-placeholder {
+  font-size: 4rem;
+  opacity: 0.8;
+}
+
+.dog-photo-input-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dog-hero-photo--editable {
+  cursor: pointer;
+  position: relative;
+  border: 2px dashed var(--border-strong);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.dog-hero-photo--editable:hover,
+.dog-hero-photo--drag {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.dog-hero-photo-hint {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+}
+
+.dog-profile-error {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--coral);
+}
+
+.dog-hero-form .form-group {
+  margin-bottom: 0.85rem;
+}
+
+.dog-hero-form .form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.dog-hero-form .form-group input,
+.dog-hero-form .form-group select {
+  width: 100%;
+  max-width: 280px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
+
+.dog-hero-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.dog-hero-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.dog-hero-name {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--heading);
+}
+
+.dog-hero-breed {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+}
+
+.dog-hero-meta {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.dog-hero-reactivity {
+  margin-bottom: 1rem;
+}
+
+.dog-hero-reactivity-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.dog-hero-reactivity-value {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* Dog profile panels */
+.dog-panel {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 1.35rem 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 1.25rem;
+}
+
+.dog-panel-title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.dog-panel-note,
+.dog-panel-empty {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* Training focus */
+.dog-training-progress-wrap {
+  height: 10px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.dog-training-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-soft) 0%, var(--accent) 100%);
+  border-radius: 999px;
+}
+
+.dog-training-progress-input {
+  width: 100%;
+  height: 10px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.dog-training-notes-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.dog-panel--details .form-group input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
+
+.dog-panel--danger {
+  border-color: var(--warm);
+  background: var(--warm-soft);
+}
+
+.dog-panel--danger .btn-danger {
+  margin-top: 0.5rem;
+}
+
+.dog-training-notes {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* Meetups section */
+.dog-meetups-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.dog-meetups-tab {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg);
+  cursor: default;
+}
+
+.dog-meetups-tab--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Detailed info */
+.dog-details-list {
+  margin: 0;
+}
+
+.dog-details-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.dog-details-row:last-child {
+  border-bottom: none;
+}
+
+.dog-details-row dt {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  min-width: 6rem;
+}
+
+.dog-details-row dd {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
 /* Dashboard layout: social-app pattern with card sections */
 .app-page--dashboard .dashboard-layout {
   max-width: 960px;

@@ -37,7 +37,7 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
         <div className="app-sidebar-header">{logo}</div>
         <nav className="nav-sidebar nav-sidebar--primary" aria-label="Main">
           <NavLink to="/dashboard" end>Home</NavLink>
-          <NavLink to="/profile#dogs">Dogs</NavLink>
+          <NavLink to="/dogs">Dogs</NavLink>
           <NavLink to="/meetups">Meetups</NavLink>
           <NavLink to="/messages" className="nav-sidebar-link-with-badge">
             Messages

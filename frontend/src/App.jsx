@@ -14,6 +14,8 @@ import Support from './pages/Support';
 import Article from './pages/Article';
 import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
+import Dogs from './pages/Dogs';
+import DogProfile from './pages/DogProfile';
 import AddDog from './pages/AddDog';
 import EditDog from './pages/EditDog';
 import Settings from './pages/Settings';
@@ -43,6 +45,8 @@ export default function App() {
         <Route path="nearby" element={<PrivateRoute><Nearby /></PrivateRoute>} />
         <Route path="profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="user/:id" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+        <Route path="dogs" element={<PrivateRoute><Dogs /></PrivateRoute>} />
+        <Route path="dogs/:id" element={<PrivateRoute><DogProfile /></PrivateRoute>} />
         <Route path="profile/dogs/new" element={<PrivateRoute><AddDog /></PrivateRoute>} />
         <Route path="profile/dogs/:id" element={<PrivateRoute><EditDog /></PrivateRoute>} />
         <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
