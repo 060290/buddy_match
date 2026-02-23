@@ -47,7 +47,6 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
           <NavLink to="/profile">Profile</NavLink>
         </nav>
         <nav className="nav-sidebar nav-sidebar--secondary" aria-label="More">
-          <NavLink to="/nearby">Nearby</NavLink>
           <NavLink to="/settings">Settings</NavLink>
         </nav>
         <div className="app-sidebar-footer">
@@ -78,7 +77,6 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
               <Link to="/meetups">Meetups</Link>
               <Link to="/tips">Tips</Link>
               <Link to="/messages">Messages</Link>
-              <Link to="/nearby">Nearby</Link>
               <button type="button" className="btn btn-ghost nav-btn" onClick={handleLogout}>Log out</button>
             </>
           ) : (
