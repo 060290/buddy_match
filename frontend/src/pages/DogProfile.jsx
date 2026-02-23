@@ -22,16 +22,17 @@ function setStoredTraining(id, progress, notes) {
   } catch (_) {}
 }
 
-const INITIAL_FORM = { name: '', avatarUrl: '', size: '', age: '', breed: '', reactivityTags: '', triggers: '' };
+const API_FIELDS = ['name', 'breed', 'age', 'size', 'reactivityTags', 'triggers'];
 
 export default function DogProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const inlineInputRef = useRef(null);
   const [dog, setDog] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState(INITIAL_FORM);
+  const [activeField, setActiveField] = useState(null);
+  const [editValue, setEditValue] = useState('');
   const [training, setTraining] = useState({ progress: 50, notes: '' });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -46,15 +47,6 @@ export default function DogProfile() {
       .then((r) => {
         const d = r.data;
         setDog(d);
-        setForm({
-          name: d.name || '',
-          avatarUrl: d.avatarUrl || '',
-          size: d.size || '',
-          age: d.age || '',
-          breed: d.breed || '',
-          reactivityTags: d.reactivityTags || '',
-          triggers: d.triggers || '',
-        });
         setTraining(getStoredTraining(d.id));
       })
       .catch(() => setDog(null))
@@ -65,10 +57,63 @@ export default function DogProfile() {
     loadDog();
   }, [id]);
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    if (activeField && inlineInputRef.current) {
+      inlineInputRef.current.focus();
+      if (activeField === 'name' || activeField === 'trainingNotes' || activeField === 'detailsNotes') inlineInputRef.current.select();
+    }
+  }, [activeField]);
+
+  const startEdit = (field, currentValue) => {
     setError('');
-    setUploadError('');
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    setActiveField(field);
+    setEditValue(currentValue ?? '');
+  };
+
+  const saveField = async (field, value) => {
+    if (API_FIELDS.includes(field)) {
+      const trimmed = typeof value === 'string' ? value.trim() : value;
+      if (field === 'name' && !trimmed) {
+        setError('Name is required.');
+        return;
+      }
+      if (field === 'size' && !trimmed) {
+        setActiveField(null);
+        return;
+      }
+      setSaving(true);
+      setError('');
+      try {
+        const payload = { [field]: trimmed || null };
+        if (field === 'name') payload.name = trimmed || dog.name;
+        if (field === 'size') payload.size = trimmed || dog.size;
+        const updated = await api.patch(`/dogs/${id}`, payload).then((r) => r.data);
+        setDog(updated);
+      } catch (err) {
+        setError(err.response?.data?.error || err.message || 'Could not save');
+      } finally {
+        setSaving(false);
+      }
+    } else if (field === 'trainingNotes' || field === 'detailsNotes') {
+      setTraining((t) => ({ ...t, notes: value }));
+      if (dog?.id) setStoredTraining(dog.id, training.progress, value);
+    } else if (field === 'trainingProgress') {
+      const num = Math.min(100, Math.max(0, Number(value) || 0));
+      setTraining((t) => ({ ...t, progress: num }));
+      if (dog?.id) setStoredTraining(dog.id, num, training.notes);
+    }
+    setActiveField(null);
+  };
+
+  const handleInlineKeyDown = (e, field) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveField(field, editValue);
+    }
+    if (e.key === 'Escape') {
+      setActiveField(null);
+      setError('');
+    }
   };
 
   const handleTrainingChange = (field, value) => {
@@ -89,9 +134,13 @@ export default function DogProfile() {
     }
     try {
       const dataUrl = await resizeImageForAvatar(file);
-      setForm((f) => ({ ...f, avatarUrl: dataUrl }));
+      setSaving(true);
+      const updated = await api.patch(`/dogs/${id}`, { avatarUrl: dataUrl }).then((r) => r.data);
+      setDog(updated);
     } catch (err) {
-      setUploadError(err.message || 'Could not process image');
+      setUploadError(err.response?.data?.error || err.message || 'Could not save photo');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -104,48 +153,6 @@ export default function DogProfile() {
     e.preventDefault();
     setDragOver(false);
     handleFile(e.dataTransfer.files);
-  };
-
-  const onDragOver = (e) => {
-    e.preventDefault();
-    setDragOver(true);
-  };
-
-  const onDragLeave = () => setDragOver(false);
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    if (!form.name?.trim() || !form.size?.trim()) {
-      setError('Name and size are required.');
-      return;
-    }
-    setSaving(true);
-    setError('');
-    try {
-      const updated = await api.patch(`/dogs/${id}`, form).then((r) => r.data);
-      setDog(updated);
-      setEditing(false);
-      setStoredTraining(updated.id, training.progress, training.notes);
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Could not save');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setForm({
-      name: dog?.name || '',
-      avatarUrl: dog?.avatarUrl || '',
-      size: dog?.size || '',
-      age: dog?.age || '',
-      breed: dog?.breed || '',
-      reactivityTags: dog?.reactivityTags || '',
-      triggers: dog?.triggers || '',
-    });
-    setError('');
-    setUploadError('');
-    setEditing(false);
   };
 
   const handleDelete = async () => {
@@ -165,144 +172,171 @@ export default function DogProfile() {
   if (loading) return <div className="app-page"><div className="dog-profile-content"><p>Loading…</p></div></div>;
   if (!dog) return <div className="app-page"><div className="dog-profile-content"><p>Dog not found.</p><Link to="/dogs">Back to dogs</Link></div></div>;
 
-  const displayDog = editing ? { ...dog, ...form } : dog;
+  const value = (field) => dog[field] ?? '';
 
   return (
     <div className="app-page app-page--dog-profile">
       <div className="dog-profile-content">
         <Link to="/dogs" className="dog-profile-back">← Back to dogs</Link>
 
-        {/* Identity hero – view or edit */}
         <section className="dog-hero">
           <div className="dog-hero-photo-wrap">
-            {editing ? (
-              <>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/*"
-                  className="dog-photo-input-hidden"
-                  aria-label="Upload dog photo"
-                  onChange={onFileInputChange}
-                />
-                <div
-                  className={`dog-hero-photo dog-hero-photo--editable ${dragOver ? 'dog-hero-photo--drag' : ''}`}
-                  onClick={() => fileInputRef.current?.click()}
-                  onDrop={onDrop}
-                  onDragOver={onDragOver}
-                  onDragLeave={onDragLeave}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
-                  aria-label="Change photo: click or drag image"
-                >
-                  {form.avatarUrl ? (
-                    <img src={form.avatarUrl} alt="" />
-                  ) : (
-                    <span className="dog-hero-placeholder" aria-hidden>🐕</span>
-                  )}
-                  <span className="dog-hero-photo-hint">Change photo</span>
-                </div>
-                {uploadError && <p className="dog-profile-error">{uploadError}</p>}
-              </>
-            ) : (
-              <div className="dog-hero-photo">
-                {displayDog.avatarUrl ? (
-                  <img src={displayDog.avatarUrl} alt="" />
-                ) : (
-                  <span className="dog-hero-placeholder" aria-hidden>🐕</span>
-                )}
-              </div>
-            )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="dog-photo-input-hidden"
+              aria-label="Upload dog photo"
+              onChange={onFileInputChange}
+            />
+            <div
+              className={`dog-hero-photo dog-hero-photo--editable ${dragOver ? 'dog-hero-photo--drag' : ''}`}
+              onClick={() => fileInputRef.current?.click()}
+              onDrop={onDrop}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
+              aria-label="Change photo: click or drag image"
+            >
+              {dog.avatarUrl ? (
+                <img src={dog.avatarUrl} alt="" />
+              ) : (
+                <span className="dog-hero-placeholder" aria-hidden>🐕</span>
+              )}
+              <span className="dog-hero-photo-hint">Click to change photo</span>
+            </div>
+            {(uploadError || error) && <p className="dog-profile-error">{uploadError || error}</p>}
+            {saving && <p className="dog-profile-saving">Saving…</p>}
           </div>
           <div className="dog-hero-info">
-            {editing ? (
-              <form onSubmit={handleSave} className="dog-hero-form">
-                <div className="form-group">
-                  <label>Name *</label>
-                  <input type="text" name="name" value={form.name} onChange={handleChange} required placeholder="e.g. Luna" />
-                </div>
-                <div className="form-group">
-                  <label>Breed</label>
-                  <input type="text" name="breed" value={form.breed} onChange={handleChange} placeholder="e.g. Golden Retriever" />
-                </div>
-                <div className="form-group">
-                  <label>Age</label>
-                  <input type="text" name="age" value={form.age} onChange={handleChange} placeholder="e.g. 2 years" />
-                </div>
-                <div className="form-group">
-                  <label>Size *</label>
-                  <select name="size" value={form.size} onChange={handleChange} required>
-                    <option value="">Select size…</option>
-                    <option value="Small">Small</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Large">Large</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Reactivity summary</label>
-                  <input type="text" name="reactivityTags" value={form.reactivityTags} onChange={handleChange} placeholder="e.g. Dog-friendly, leash-reactive" />
-                </div>
-                {error && <p className="dog-profile-error">{error}</p>}
-                <div className="dog-hero-actions">
-                  <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
-                  <button type="button" className="btn btn-ghost" onClick={handleCancel}>Cancel</button>
-                </div>
-              </form>
+            {/* Name */}
+            {activeField === 'name' ? (
+              <input
+                ref={inlineInputRef}
+                type="text"
+                className="dog-inline-input dog-inline-input--name"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={() => saveField('name', editValue)}
+                onKeyDown={(e) => handleInlineKeyDown(e, 'name')}
+                placeholder="Dog’s name"
+              />
             ) : (
-              <>
-                <h1 className="dog-hero-name">{displayDog.name ?? 'Dog'}</h1>
-                <p className="dog-hero-breed">{displayDog.breed || '—'}</p>
-                <p className="dog-hero-meta">Age: {displayDog.age || '—'} · Size: {displayDog.size ?? '—'}</p>
-                <div className="dog-hero-reactivity">
-                  <span className="dog-hero-reactivity-label">Reactivity summary</span>
-                  <span className="dog-hero-reactivity-value">{displayDog.reactivityTags || '—'}</span>
-                </div>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>Edit profile</button>
-              </>
+              <h1 className="dog-hero-name dog-field-clickable" onClick={() => startEdit('name', value('name'))} title="Click to edit">
+                {value('name') || 'Add name'}
+              </h1>
             )}
+
+            {/* Breed */}
+            {activeField === 'breed' ? (
+              <input
+                ref={inlineInputRef}
+                type="text"
+                className="dog-inline-input"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={() => saveField('breed', editValue)}
+                onKeyDown={(e) => handleInlineKeyDown(e, 'breed')}
+                placeholder="Breed"
+              />
+            ) : (
+              <p className="dog-hero-breed dog-field-clickable" onClick={() => startEdit('breed', value('breed'))} title="Click to edit">
+                {value('breed') || 'Add breed'}
+              </p>
+            )}
+
+            <p className="dog-hero-meta">
+              Age: {activeField === 'age' ? (
+                <input
+                  ref={inlineInputRef}
+                  type="text"
+                  className="dog-inline-input"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={() => saveField('age', editValue)}
+                  onKeyDown={(e) => handleInlineKeyDown(e, 'age')}
+                  placeholder="e.g. 2 years"
+                />
+              ) : (
+                <span className="dog-field-clickable" onClick={() => startEdit('age', value('age'))} title="Click to edit">{value('age') || '—'}</span>
+              )}
+              {' · '}
+              Size: {activeField === 'size' ? (
+                <select
+                  ref={inlineInputRef}
+                  className="dog-inline-select"
+                  value={editValue}
+                  onChange={(e) => { setEditValue(e.target.value); saveField('size', e.target.value); }}
+                  onBlur={() => setActiveField(null)}
+                >
+                  <option value="">—</option>
+                  <option value="Small">Small</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Large">Large</option>
+                </select>
+              ) : (
+                <span className="dog-field-clickable" onClick={() => startEdit('size', value('size'))} title="Click to edit">{value('size') || '—'}</span>
+              )}
+            </p>
+
+            {/* Reactivity summary */}
+            <div className="dog-hero-reactivity">
+              <span className="dog-hero-reactivity-label">Reactivity summary</span>
+              {activeField === 'reactivityTags' ? (
+                <input
+                  ref={inlineInputRef}
+                  type="text"
+                  className="dog-inline-input"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={() => saveField('reactivityTags', editValue)}
+                  onKeyDown={(e) => handleInlineKeyDown(e, 'reactivityTags')}
+                  placeholder="e.g. Dog-friendly, leash-reactive"
+                />
+              ) : (
+                <span className="dog-hero-reactivity-value dog-field-clickable" onClick={() => startEdit('reactivityTags', value('reactivityTags'))} title="Click to edit">
+                  {value('reactivityTags') || 'Add reactivity notes'}
+                </span>
+              )}
+            </div>
           </div>
         </section>
 
-        {/* Training focus – editable progress and notes (notes stored in localStorage) */}
+        {/* Training focus */}
         <section className="dog-panel dog-panel--training">
           <h2 className="dog-panel-title">Training focus</h2>
           <div className="dog-training-progress-wrap">
-            {editing ? (
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={training.progress}
-                onChange={(e) => handleTrainingChange('progress', Number(e.target.value))}
-                className="dog-training-progress-input"
-                aria-label="Training progress"
-              />
-            ) : (
-              <div className="dog-training-progress-bar" style={{ width: `${training.progress}%` }} aria-hidden />
-            )}
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={training.progress}
+              onChange={(e) => handleTrainingChange('progress', Number(e.target.value))}
+              className="dog-training-progress-input"
+              aria-label="Training progress"
+            />
           </div>
-          <p className="dog-training-notes">
-            Working on: {editing ? form.reactivityTags || '—' : displayDog.reactivityTags || '—'}
-          </p>
-          {editing ? (
-            <div className="form-group">
-              <label>Notes (saved locally)</label>
-              <textarea
-                name="trainingNotes"
-                value={training.notes}
-                onChange={(e) => handleTrainingChange('notes', e.target.value)}
-                placeholder="Goals, what’s working, etc."
-                rows={3}
-                className="dog-training-notes-input"
-              />
-            </div>
+          <p className="dog-training-notes">Working on: {value('reactivityTags') || '—'}</p>
+          {activeField === 'trainingNotes' ? (
+            <textarea
+              ref={inlineInputRef}
+              className="dog-training-notes-input"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={() => { saveField('trainingNotes', editValue); }}
+              onKeyDown={(e) => { if (e.key === 'Escape') setActiveField(null); }}
+              placeholder="Goals, what’s working, etc. (saved locally)"
+              rows={3}
+            />
           ) : (
-            training.notes ? <p className="dog-panel-note">{training.notes}</p> : null
+            <p className="dog-panel-note dog-field-clickable dog-field-notes" onClick={() => startEdit('trainingNotes', training.notes)} title="Click to edit">
+              {training.notes || 'Add training notes…'}
+            </p>
           )}
         </section>
 
-        {/* Meetups – placeholder */}
         <section className="dog-panel dog-panel--meetups">
           <h2 className="dog-panel-title">Meetups</h2>
           <div className="dog-meetups-tabs">
@@ -312,47 +346,65 @@ export default function DogProfile() {
           <p className="dog-panel-empty">No meetups for this dog yet.</p>
         </section>
 
-        {/* Compatible dogs – placeholder */}
         <section className="dog-panel dog-panel--matches">
           <h2 className="dog-panel-title">Compatible dogs & matches</h2>
           <p className="dog-panel-empty">Matches will appear here.</p>
         </section>
 
-        {/* Detailed info – view or edit triggers */}
         <section className="dog-panel dog-panel--details">
           <h2 className="dog-panel-title">Detailed info</h2>
-          {editing ? (
-            <div className="form-group">
-              <label>Triggers</label>
-              <input type="text" name="triggers" value={form.triggers} onChange={handleChange} placeholder="e.g. Bikes, loud noises" />
+          <dl className="dog-details-list">
+            <div className="dog-details-row">
+              <dt>Triggers</dt>
+              <dd>
+                {activeField === 'triggers' ? (
+                  <input
+                    ref={inlineInputRef}
+                    type="text"
+                    className="dog-inline-input dog-inline-input--full"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={() => saveField('triggers', editValue)}
+                    onKeyDown={(e) => handleInlineKeyDown(e, 'triggers')}
+                    placeholder="e.g. Bikes, loud noises"
+                  />
+                ) : (
+                  <span className="dog-field-clickable" onClick={() => startEdit('triggers', value('triggers'))} title="Click to edit">{value('triggers') || '—'}</span>
+                )}
+              </dd>
             </div>
-          ) : (
-            <dl className="dog-details-list">
-              <div className="dog-details-row">
-                <dt>Triggers</dt>
-                <dd>{displayDog.triggers || '—'}</dd>
-              </div>
-              <div className="dog-details-row">
-                <dt>Preferences</dt>
-                <dd>—</dd>
-              </div>
-              <div className="dog-details-row">
-                <dt>Notes</dt>
-                <dd>{training.notes || '—'}</dd>
-              </div>
-            </dl>
-          )}
+            <div className="dog-details-row">
+              <dt>Preferences</dt>
+              <dd>—</dd>
+            </div>
+            <div className="dog-details-row">
+              <dt>Notes</dt>
+              <dd>
+                {activeField === 'detailsNotes' ? (
+                  <textarea
+                    ref={inlineInputRef}
+                    className="dog-inline-input dog-details-notes-input"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={() => saveField('detailsNotes', editValue)}
+                    onKeyDown={(e) => { if (e.key === 'Escape') setActiveField(null); }}
+                    placeholder="Add notes…"
+                    rows={3}
+                  />
+                ) : (
+                  <span className="dog-field-clickable" onClick={() => startEdit('detailsNotes', training.notes)} title="Click to edit">{training.notes || '—'}</span>
+                )}
+              </dd>
+            </div>
+          </dl>
         </section>
 
-        {/* Delete – only when not editing */}
-        {!editing && (
-          <section className="dog-panel dog-panel--danger">
-            <p className="dog-panel-note">Remove this dog from your profile. This can’t be undone.</p>
-            <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
-              {deleting ? 'Removing…' : 'Delete dog'}
-            </button>
-          </section>
-        )}
+        <section className="dog-panel dog-panel--danger">
+          <p className="dog-panel-note">Remove this dog from your profile. This can’t be undone.</p>
+          <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+            {deleting ? 'Removing…' : 'Delete dog'}
+          </button>
+        </section>
       </div>
     </div>
   );

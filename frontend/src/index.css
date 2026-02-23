@@ -2258,6 +2258,62 @@ input, textarea {
   color: var(--text);
 }
 
+/* Click-to-edit: fields that become inputs on click */
+.dog-field-clickable {
+  cursor: text;
+  border-radius: 6px;
+  padding: 0.15em 0.35em;
+  margin: -0.15em -0.35em;
+  transition: background 0.15s ease;
+}
+
+.dog-field-clickable:hover {
+  background: var(--accent-soft);
+}
+
+.dog-field-notes {
+  min-height: 2.5em;
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+}
+
+.dog-field-notes:hover {
+  background: var(--accent-soft);
+}
+
+.dog-inline-input,
+.dog-inline-select {
+  font: inherit;
+  color: inherit;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--surface);
+  width: 100%;
+  max-width: 320px;
+}
+
+.dog-inline-input--name {
+  font-size: 1.75rem;
+  font-weight: 800;
+  max-width: 100%;
+}
+
+.dog-inline-input--full {
+  max-width: 100%;
+}
+
+.dog-inline-select {
+  max-width: 140px;
+  cursor: pointer;
+}
+
+.dog-profile-saving {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 /* Dog profile panels */
 .dog-panel {
   background: var(--surface);
@@ -2389,6 +2445,17 @@ input, textarea {
   margin: 0;
   font-size: 0.95rem;
   color: var(--text);
+}
+
+.dog-details-notes-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
 }
 
 /* Dashboard layout: social-app pattern with card sections */
