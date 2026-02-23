@@ -7,11 +7,11 @@ const { JWT_SECRET } = require('../middleware/auth');
 const prisma = new PrismaClient();
 const COOKIE_OPTS = { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax', path: '/' };
 
-// Fields we need from User - omit avatarUrl so login works even if Prisma client is out of sync with schema
 const USER_SELECT_AUTH = {
   id: true,
   email: true,
   name: true,
+  avatarUrl: true,
   passwordHash: true,
   city: true,
   lat: true,

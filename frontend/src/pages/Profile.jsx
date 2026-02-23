@@ -4,7 +4,7 @@ import { api } from '../api';
 import { useLocation } from 'react-router-dom';
 
 export default function Profile() {
-  const { user, refreshMe } = useAuth();
+  const { user, refreshMe, updateUser } = useAuth();
   const location = useLocation();
   const pledgeRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -12,6 +12,8 @@ export default function Profile() {
   const [dogs, setDogs] = useState([]);
   const [form, setForm] = useState({ name: '', avatarUrl: '', city: '', lat: '', lng: '', experience: '', availability: '' });
   const [saving, setSaving] = useState(false);
+  const [photoSaving, setPhotoSaving] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState('');
   const [pledging, setPledging] = useState(false);
   const [message, setMessage] = useState('');
   const [loadError, setLoadError] = useState(null);
@@ -131,7 +133,24 @@ export default function Profile() {
   function removePhoto() {
     setForm((f) => ({ ...f, avatarUrl: '' }));
     setUploadError('');
+    setPhotoMessage('');
   }
+
+  const savePhoto = async () => {
+    setPhotoSaving(true);
+    setPhotoMessage('');
+    setUploadError('');
+    try {
+      await api.patch('/users/me', { avatarUrl: form.avatarUrl || null });
+      await refreshMe();
+      updateUser({ avatarUrl: form.avatarUrl || null });
+      setPhotoMessage('Photo saved.');
+    } catch (err) {
+      setPhotoMessage(err.message || 'Could not save photo');
+    } finally {
+      setPhotoSaving(false);
+    }
+  };
 
   const saveProfile = async (e) => {
     e.preventDefault();
@@ -140,6 +159,7 @@ export default function Profile() {
     try {
       await api.patch('/users/me', form);
       await refreshMe();
+      updateUser({ avatarUrl: form.avatarUrl || null });
       setMessage('Profile updated.');
     } catch (err) {
       setMessage(err.message || 'Update failed');
@@ -233,11 +253,16 @@ export default function Profile() {
                 </span>
               </div>
               <div className="profile-picture-form">
+                <p className="profile-photo-hint">Profile picture is saved separately from the rest of your profile.</p>
+                <button type="button" className="btn btn-primary btn-sm" onClick={savePhoto} disabled={photoSaving}>
+                  {photoSaving ? 'Saving…' : 'Save photo'}
+                </button>
                 {form.avatarUrl && (
                   <button type="button" className="btn btn-ghost btn-sm profile-remove-photo" onClick={removePhoto}>
                     Remove photo
                   </button>
                 )}
+                {photoMessage && <p className={photoMessage.startsWith('Photo saved') ? 'profile-photo-success' : 'error-msg'} style={{ marginTop: '0.5rem' }}>{photoMessage}</p>}
                 {uploadError && <p className="error-msg" style={{ marginTop: '0.5rem' }}>{uploadError}</p>}
                 <button type="button" className="link-button" onClick={() => setShowPasteLink(!showPasteLink)} style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
                   {showPasteLink ? 'Hide link' : 'Or paste an image link'}

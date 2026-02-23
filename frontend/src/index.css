@@ -470,8 +470,20 @@ input, textarea {
   color: var(--accent);
 }
 
+.profile-photo-hint {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.profile-photo-success {
+  color: var(--teal);
+  font-weight: 600;
+  margin: 0;
+}
+
 .profile-remove-photo {
-  margin-bottom: 0.25rem;
+  margin: 0.25rem 0 0;
 }
 
 .link-button {

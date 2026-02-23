@@ -32,8 +32,11 @@ export function AuthProvider({ children }) {
   const refreshMe = () =>
     api.get('/auth/me').then((res) => setUser(res.data));
 
+  const updateUser = (updates) =>
+    setUser((prev) => (prev ? { ...prev, ...updates } : null));
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshMe }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshMe, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
