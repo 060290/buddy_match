@@ -21,12 +21,19 @@ export default function Profile() {
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [showPasteLink, setShowPasteLink] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [showPledgeModal, setShowPledgeModal] = useState(false);
 
   useEffect(() => {
-    if (location.hash === '#safety-pledge' && pledgeRef.current) {
-      pledgeRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (location.hash === '#safety-pledge' && profile && !profile.safetyPledgedAt) {
+      setShowPledgeModal(true);
     }
   }, [location.hash, profile]);
+
+  useEffect(() => {
+    if (showPledgeModal && pledgeRef.current) {
+      pledgeRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showPledgeModal]);
 
   useEffect(() => {
     setLoadError(null);
@@ -185,6 +192,7 @@ export default function Profile() {
       await refreshMe();
       const { data } = await api.get('/users/me');
       setProfile(data);
+      setShowPledgeModal(false);
       setMessage('Thanks for taking the Safety Pledge!');
     } catch (err) {
       setMessage(err.message || 'Could not save pledge');
@@ -312,7 +320,9 @@ export default function Profile() {
               <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--accent-soft)' }}>
                 <strong>Take the Safety Pledge</strong>
                 <p style={{ margin: '0.5rem 0', fontSize: '0.95rem' }}>Commit to safe, force-free meetups and show others you’re on the same page.</p>
-                <button type="button" className="btn btn-primary" onClick={takePledge} disabled={pledging}>{pledging ? 'Saving…' : 'Take the pledge'}</button>
+                <button type="button" className="btn btn-primary" onClick={() => setShowPledgeModal(true)}>
+                  Take the pledge
+                </button>
                 {message && (
                   <p style={{ margin: '0.75rem 0 0', fontSize: '0.9rem', color: message.startsWith('Thanks') ? 'var(--accent)' : '#b54a4a' }}>
                     {message}
@@ -321,6 +331,32 @@ export default function Profile() {
               </div>
             )}
           </div>
+
+          {showPledgeModal && (
+            <div className="pledge-modal-overlay" onClick={() => !pledging && setShowPledgeModal(false)} role="dialog" aria-modal="true" aria-labelledby="pledge-title">
+              <div className="pledge-modal" onClick={(e) => e.stopPropagation()}>
+                <h2 id="pledge-title" className="pledge-modal-title">BuddyMatch Safety Pledge</h2>
+                <div className="pledge-modal-text">
+                  <p>By signing below, I pledge to:</p>
+                  <ul>
+                    <li>Prioritize the safety and well-being of all dogs and people at meetups</li>
+                    <li>Use force-free, positive methods only — no aversive tools or techniques</li>
+                    <li>Communicate openly with other members and respect each dog’s boundaries</li>
+                    <li>Create a welcoming, low-stress environment for every buddy</li>
+                  </ul>
+                  <p><strong>I understand that this pledge reflects my commitment to the BuddyMatch community.</strong></p>
+                </div>
+                <div className="pledge-modal-actions">
+                  <button type="button" className="btn btn-primary" onClick={takePledge} disabled={pledging}>
+                    {pledging ? 'Signing…' : 'Sign the pledge'}
+                  </button>
+                  <button type="button" className="btn btn-ghost" onClick={() => setShowPledgeModal(false)} disabled={pledging}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={saveProfile} className="card" style={{ marginBottom: 0 }}>
             <h2 style={{ marginTop: 0 }}>Your details</h2>
