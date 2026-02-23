@@ -2064,15 +2064,22 @@ input, textarea {
 }
 
 .home-training-card--link {
-  text-decoration: none;
+  text-decoration: none !important;
   color: inherit;
   display: block;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.home-training-card--link:hover {
+.home-training-card--link:hover,
+.home-training-card--link:focus {
+  text-decoration: none !important;
   border-color: var(--accent);
   box-shadow: var(--shadow-soft);
+}
+
+.home-training-card--link:hover *,
+.home-training-card--link:focus * {
+  text-decoration: none !important;
 }
 
 .home-training-steps {
