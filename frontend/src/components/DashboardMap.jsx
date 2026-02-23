@@ -34,41 +34,61 @@ const DEFAULT_CENTER = [40.7, -74];
 const ZOOM_MIN = 9;
 const ZOOM_MAX = 17;
 
+function safeNum(n) {
+  const x = Number(n);
+  return Number.isFinite(x) ? x : undefined;
+}
+
 export default function DashboardMap({ meetups = [], userLat, userLng, radiusMiles = 50 }) {
   useEffect(() => {
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    });
+    try {
+      if (L.Icon.Default?.prototype?._getIconUrl) delete L.Icon.Default.prototype._getIconUrl;
+      if (L.Icon.Default?.mergeOptions) {
+        L.Icon.Default.mergeOptions({
+          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+          iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        });
+      }
+    } catch (_) {}
   }, []);
 
   const withCoords = useMemo(
-    () => meetups.filter((m) => m.lat != null && m.lng != null),
+    () => (Array.isArray(meetups) ? meetups : []).filter((m) => m && safeNum(m.lat) != null && safeNum(m.lng) != null),
     [meetups]
   );
 
-  const hasUserLocation = userLat != null && userLng != null;
+  const lat = safeNum(userLat);
+  const lng = safeNum(userLng);
+  const hasUserLocation = lat != null && lng != null;
   const center = useMemo(() => {
-    if (hasUserLocation) return [userLat, userLng];
+    if (hasUserLocation) return [lat, lng];
     if (withCoords.length > 0) {
-      const sumLat = withCoords.reduce((a, m) => a + m.lat, 0);
-      const sumLng = withCoords.reduce((a, m) => a + m.lng, 0);
+      const sumLat = withCoords.reduce((a, m) => a + (safeNum(m.lat) ?? 0), 0);
+      const sumLng = withCoords.reduce((a, m) => a + (safeNum(m.lng) ?? 0), 0);
       return [sumLat / withCoords.length, sumLng / withCoords.length];
     }
     return DEFAULT_CENTER;
-  }, [userLat, userLng, hasUserLocation, withCoords]);
+  }, [lat, lng, hasUserLocation, withCoords]);
 
   const maxBounds = useMemo(() => {
-    if (!hasUserLocation) return undefined;
-    return boundsForRadius(userLat, userLng, radiusMiles);
-  }, [hasUserLocation, userLat, userLng, radiusMiles]);
+    if (!hasUserLocation || lat == null || lng == null) return undefined;
+    return boundsForRadius(lat, lng, radiusMiles);
+  }, [hasUserLocation, lat, lng, radiusMiles]);
+
+  const [cLat, cLng] = center;
+  if (!Number.isFinite(cLat) || !Number.isFinite(cLng)) {
+    return (
+      <div className="dashboard-map-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+        Map unavailable
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-map-wrap">
       <MapContainer
-        center={center}
+        center={[cLat, cLng]}
         zoom={10}
         minZoom={ZOOM_MIN}
         maxZoom={ZOOM_MAX}
@@ -83,10 +103,10 @@ export default function DashboardMap({ meetups = [], userLat, userLng, radiusMil
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {withCoords.length > 0 && <FitBounds meetups={withCoords} maxZoom={ZOOM_MAX} />}
-        {withCoords.map((m) => (
-          <Marker key={m.id} position={[m.lat, m.lng]}>
+        {withCoords.map((m, i) => (
+          <Marker key={m?.id ?? i} position={[safeNum(m.lat) ?? 0, safeNum(m.lng) ?? 0]}>
             <Popup>
-              <Link to={`/meetups/${m.id}`} style={{ fontWeight: 600 }}>{m.title}</Link>
+              <Link to={`/meetups/${m?.id ?? ''}`} style={{ fontWeight: 600 }}>{m?.title ?? 'Meetup'}</Link>
               {m.location && <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{m.location}</div>}
               {m.meetupAt && (
                 <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>

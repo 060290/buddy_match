@@ -1,20 +1,21 @@
 ---
-description: After making code changes, provide terminal commands to commit and push
+description: After every change, generate terminal commands to commit and push to GitHub
 alwaysApply: true
 ---
 
-# Git workflow after changes
+# Git: commit and push after every change
 
-Whenever you make or suggest code changes for the user, end your response with the exact terminal commands they can run to commit and push. Assume they are in the project root (`~/Desktop/buddy_match` or the workspace root).
+After making any code changes, always end by generating the exact terminal commands to commit and push to GitHub.
 
-**Format to provide:**
+**Always provide this block:**
 
 ```bash
-cd ~/Desktop/buddy_match
+cd /Users/ellie/Desktop/buddy_match
 git add -A
-git commit -m "Short descriptive message for the change"
-git push
+git commit -m "Short descriptive message"
+git push origin main
 ```
 
-- Use a concise, imperative commit message that describes what was done (e.g. "Add dark mode toggle", "Fix login validation").
-- If the repo has no remote yet, give the commit commands only and note they can add a remote and push when ready.
+- Use a concise, imperative commit message (e.g. "Fix dashboard map", "Add location search").
+- If the branch is not `main`, use the correct branch name for `git push`.
+- If there is no remote, give only `git add` and `git commit` and note how to add remote and push.

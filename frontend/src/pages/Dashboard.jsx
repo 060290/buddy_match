@@ -1,7 +1,28 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
+
+const DashboardMap = lazy(() => import('../components/DashboardMap'));
+
+class MapErrorBoundary extends React.Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="dashboard-map-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--text-muted)', minHeight: '200px' }}>
+          <span aria-hidden>🗺️</span>
+          <span>Map couldn’t load.</span>
+          <Link to="/meetups" className="btn btn-secondary btn-sm">Browse meetups</Link>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -67,13 +88,19 @@ export default function Dashboard() {
             <h2 className="dashboard-section-title">Meetups on the map</h2>
             <p className="dashboard-section-lead">
               {user?.lat != null && user?.lng != null
-                ? `Meetups within ${radiusMiles} miles of you.`
-                : 'Set your location in Profile to see meetups near you.'}
+                ? `Showing meetups within ${radiusMiles} miles of you. Zoom and pan are limited to this area.`
+                : 'Set your location in Profile to see meetups within 50 miles of you.'}
             </p>
-            <div className="dashboard-map-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--text-muted)', minHeight: '200px' }}>
-              <span aria-hidden>🗺️</span>
-              <Link to="/meetups" className="btn btn-secondary btn-sm">Browse meetups</Link>
-            </div>
+            <MapErrorBoundary>
+              <Suspense fallback={<div className="dashboard-map-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', minHeight: '200px' }}>Loading map…</div>}>
+                <DashboardMap
+                  meetups={meetups}
+                  userLat={user?.lat ?? undefined}
+                  userLng={user?.lng ?? undefined}
+                  radiusMiles={radiusMiles}
+                />
+              </Suspense>
+            </MapErrorBoundary>
           </section>
           <div className="dashboard-side-col">
             <section className="card dashboard-reminders-card dashboard-reminders-card--side">
