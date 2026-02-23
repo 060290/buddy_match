@@ -8,6 +8,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Restore token from storage so /auth/me and all later requests send Authorization
+    const stored = typeof window !== 'undefined' && localStorage.getItem('authToken');
+    if (stored) setAuthToken(stored);
+
     api.get('/auth/me')
       .then((res) => {
         const u = res?.data;

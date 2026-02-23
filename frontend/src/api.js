@@ -1,9 +1,25 @@
 const base = '/api';
 
-let authToken = null;
+const AUTH_STORAGE_KEY = 'authToken';
+
+function getStoredToken() {
+  try {
+    return typeof window !== 'undefined' ? localStorage.getItem(AUTH_STORAGE_KEY) : null;
+  } catch {
+    return null;
+  }
+}
+
+let authToken = getStoredToken();
 
 export function setAuthToken(token) {
   authToken = token || null;
+  try {
+    if (typeof window !== 'undefined') {
+      if (token) localStorage.setItem(AUTH_STORAGE_KEY, token);
+      else localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
+  } catch (_) {}
 }
 
 async function request(method, path, body, opts = {}) {
