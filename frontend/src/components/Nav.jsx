@@ -46,7 +46,7 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
           <span className="sidebar-user-name">{user?.name || 'Buddy'}</span>
         </Link>
         <nav className="nav-sidebar">
-          <NavLink to="/dashboard">Dashboard</NavLink>
+          <NavLink to="/dashboard">Home</NavLink>
           <NavLink to="/meetups">Meetups</NavLink>
           <NavLink to="/support">Safety tips</NavLink>
           <NavLink to="/messages" className="nav-sidebar-link-with-badge">
@@ -68,7 +68,7 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
         <nav className="nav-links">
           {isLoggedIn ? (
             <>
-              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/dashboard">Home</Link>
               <Link to="/meetups">Meetups</Link>
               <Link to="/support">Safety tips</Link>
               <Link to="/messages">Messages</Link>

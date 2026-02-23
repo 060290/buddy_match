@@ -1328,18 +1328,8 @@ input, textarea {
   font-size: 0.95rem;
 }
 
-.dashboard-map-row {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 1.5rem;
+.dashboard-main {
   margin-bottom: 1.5rem;
-  align-items: start;
-}
-
-@media (max-width: 720px) {
-  .dashboard-map-row {
-    grid-template-columns: 1fr;
-  }
 }
 
 .dashboard-side-col {
@@ -1568,6 +1558,33 @@ input, textarea {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+
+/* Meetups page: map */
+.meetups-map-card {
+  overflow: hidden;
+}
+
+.meetups-map-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.2rem;
+}
+
+.meetups-map-lead {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+
+.meetups-map-wrap {
+  height: 320px;
+  width: 100%;
+  background: var(--border);
+  border-radius: var(--radius-card);
+}
+
+.meetups-map-wrap .dashboard-map {
+  z-index: 0;
 }
 
 .dashboard-map-card {
