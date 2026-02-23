@@ -13,6 +13,7 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [pledging, setPledging] = useState(false);
   const [message, setMessage] = useState('');
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     if (location.hash === '#safety-pledge' && pledgeRef.current) {
@@ -21,21 +22,26 @@ export default function Profile() {
   }, [location.hash, profile]);
 
   useEffect(() => {
+    setLoadError(null);
     api.get('/users/me')
       .then((r) => {
-        setProfile(r.data);
-        setDogs(r.data.dogs || []);
+        const data = r.data || {};
+        setProfile(data);
+        setDogs(data.dogs || []);
         setForm({
-          name: r.data.name || '',
-          avatarUrl: r.data.avatarUrl || '',
-          city: r.data.city || '',
-          lat: r.data.lat ?? '',
-          lng: r.data.lng ?? '',
-          experience: r.data.experience || '',
-          availability: r.data.availability || '',
+          name: data.name || '',
+          avatarUrl: data.avatarUrl || '',
+          city: data.city || '',
+          lat: data.lat ?? '',
+          lng: data.lng ?? '',
+          experience: data.experience || '',
+          availability: data.availability || '',
         });
       })
-      .catch(() => setProfile(null));
+      .catch((err) => {
+        setProfile(null);
+        setLoadError(err.message || 'Could not load profile');
+      });
   }, [user?.id]);
 
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -85,7 +91,19 @@ export default function Profile() {
     return '?';
   }
 
-  if (!profile) return <div className="app-page"><div className="app-page-content">Loading profile…</div></div>;
+  if (!profile && !loadError) return <div className="app-page"><div className="app-page-content">Loading profile…</div></div>;
+
+  if (loadError) {
+    return (
+      <div className="app-page">
+        <div className="app-page-content app-page-content--narrow">
+          <h1>Profile</h1>
+          <p className="error-msg">{loadError}</p>
+          <p style={{ color: 'var(--text-muted)' }}>Try refreshing the page, or log out and log back in.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-page">
