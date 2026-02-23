@@ -41,6 +41,10 @@
   box-sizing: border-box;
 }
 
+html {
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -50,6 +54,7 @@ body {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
 #root {
@@ -163,14 +168,16 @@ input, textarea {
 
 /* App shell: left sidebar when logged in */
 .app-shell {
-  display: flex;
   min-height: 100vh;
 }
 
 .app-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 220px;
-  flex-shrink: 0;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
   background: var(--surface);
   border-right: 1px solid var(--border);
   padding: 1.25rem 0;
@@ -178,6 +185,7 @@ input, textarea {
   flex-direction: column;
   gap: 0;
   box-shadow: var(--shadow-soft);
+  z-index: 100;
 }
 
 .app-sidebar-header {
@@ -252,11 +260,11 @@ input, textarea {
 }
 
 .app-main {
-  flex: 1;
-  min-width: 0;
+  margin-left: 220px;
   min-height: 100vh;
   padding-bottom: 2rem;
   overflow-x: hidden;
+  overscroll-behavior: none;
 }
 
 /* Page content wrapper for consistent, readable layout */
