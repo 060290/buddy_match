@@ -5,6 +5,22 @@ import { api } from '../api';
 
 const HomeMap = lazy(() => import('../components/DashboardMap'));
 
+function getGoalPathProgress(dogId) {
+  try {
+    const raw = dogId ? localStorage.getItem(`dog-profile-${dogId}`) : null;
+    if (!raw) return { completed: 0, total: 5 };
+    const data = JSON.parse(raw);
+    if (data.milestones && Array.isArray(data.milestones)) {
+      const total = data.milestones.length;
+      const completed = data.milestones.filter((m) => m.wins && m.wins.length > 0).length;
+      return { completed, total };
+    }
+    return { completed: 0, total: 5 };
+  } catch {
+    return { completed: 0, total: 5 };
+  }
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [meetups, setMeetups] = useState([]);
@@ -181,19 +197,26 @@ export default function Dashboard() {
                 <p className="home-empty"><Link to="/profile/dogs/new">Add a dog</Link> to track focus.</p>
               ) : (
                 <div className="home-training-cards">
-                  {dogs.map((dog, i) => (
-                    <div key={dog?.id ?? i} className="home-training-card">
-                      <div className="home-training-card-header">
-                        <span className="home-training-dog-avatar" aria-hidden>🐕</span>
-                        <span className="home-training-dog-name">{dog?.name ?? 'Dog'}</span>
-                      </div>
-                      <p className="home-training-focus">Working on: {dog?.reactivityTags || '—'}</p>
-                      <div className="home-training-progress-wrap">
-                        <div className="home-training-progress-bar" style={{ width: '50%' }} aria-hidden />
-                      </div>
-                      <span className="home-training-progress-label">Progress</span>
-                    </div>
-                  ))}
+                  {dogs.map((dog, i) => {
+                    const { completed, total } = getGoalPathProgress(dog?.id);
+                    return (
+                      <Link key={dog?.id ?? i} to={`/dogs/${dog?.id ?? ''}`} className="home-training-card home-training-card--link">
+                        <div className="home-training-card-header">
+                          <span className="home-training-dog-avatar" aria-hidden>🐕</span>
+                          <span className="home-training-dog-name">{dog?.name ?? 'Dog'}</span>
+                        </div>
+                        <p className="home-training-focus">Working on: {dog?.reactivityTags || '—'}</p>
+                        <div className="home-training-steps">
+                          <span className="home-training-paws" aria-hidden>
+                            {Array.from({ length: total }, (_, j) => (
+                              <span key={j} className={`home-training-paw ${j < completed ? 'home-training-paw--done' : ''}`}>🐾</span>
+                            ))}
+                          </span>
+                          <span className="home-training-steps-label">{completed} of {total} steps</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </section>

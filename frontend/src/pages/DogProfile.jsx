@@ -2,23 +2,34 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { resizeImageForAvatar } from '../utils/avatar';
+import { DEFAULT_MILESTONES, NEXT_STEP_SUGGESTIONS, ALL_STEPS_STARTED } from '../data/trainingMilestones';
 
 const STORAGE_KEY = (id) => `dog-profile-${id}`;
 
-function getStoredTraining(id) {
+function getStoredGoalPath(id) {
   try {
     const raw = localStorage.getItem(STORAGE_KEY(id));
-    if (!raw) return { progress: 50, notes: '' };
+    if (!raw) return { notes: '', milestones: DEFAULT_MILESTONES.map((m) => ({ ...m, wins: [] })) };
     const data = JSON.parse(raw);
-    return { progress: Math.min(100, Math.max(0, Number(data.progress) || 50)), notes: data.notes || '' };
+    if (data.milestones && Array.isArray(data.milestones)) {
+      return {
+        notes: data.notes || '',
+        milestones: data.milestones.map((stored) => {
+          const def = DEFAULT_MILESTONES.find((d) => d.id === stored.id) || { id: stored.id, label: stored.label || stored.id };
+          return { id: def.id, label: def.label, wins: Array.isArray(stored.wins) ? stored.wins : [] };
+        }),
+      };
+    }
+    const migrated = DEFAULT_MILESTONES.map((m) => ({ ...m, wins: [] }));
+    return { notes: data.notes || '', milestones: migrated };
   } catch {
-    return { progress: 50, notes: '' };
+    return { notes: '', milestones: DEFAULT_MILESTONES.map((m) => ({ ...m, wins: [] })) };
   }
 }
 
-function setStoredTraining(id, progress, notes) {
+function setStoredGoalPath(id, data) {
   try {
-    localStorage.setItem(STORAGE_KEY(id), JSON.stringify({ progress, notes }));
+    localStorage.setItem(STORAGE_KEY(id), JSON.stringify(data));
   } catch (_) {}
 }
 
@@ -33,7 +44,10 @@ export default function DogProfile() {
   const [loading, setLoading] = useState(true);
   const [activeField, setActiveField] = useState(null);
   const [editValue, setEditValue] = useState('');
-  const [training, setTraining] = useState({ progress: 50, notes: '' });
+  const [training, setTraining] = useState({ notes: '', milestones: [] });
+  const [logWinFor, setLogWinFor] = useState(null);
+  const [logWinNote, setLogWinNote] = useState('');
+  const logWinInputRef = useRef(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +61,7 @@ export default function DogProfile() {
       .then((r) => {
         const d = r.data;
         setDog(d);
-        setTraining(getStoredTraining(d.id));
+        setTraining(getStoredGoalPath(d.id));
       })
       .catch(() => setDog(null))
       .finally(() => setLoading(false));
@@ -96,11 +110,7 @@ export default function DogProfile() {
       }
     } else if (field === 'trainingNotes' || field === 'detailsNotes') {
       setTraining((t) => ({ ...t, notes: value }));
-      if (dog?.id) setStoredTraining(dog.id, training.progress, value);
-    } else if (field === 'trainingProgress') {
-      const num = Math.min(100, Math.max(0, Number(value) || 0));
-      setTraining((t) => ({ ...t, progress: num }));
-      if (dog?.id) setStoredTraining(dog.id, num, training.notes);
+      if (dog?.id) setStoredGoalPath(dog.id, { ...training, notes: value });
     }
     setActiveField(null);
   };
@@ -116,13 +126,23 @@ export default function DogProfile() {
     }
   };
 
-  const handleTrainingChange = (field, value) => {
-    setTraining((t) => ({ ...t, [field]: value }));
-    if (dog?.id) {
-      const next = { ...training, [field]: value };
-      setStoredTraining(dog.id, next.progress, next.notes);
-    }
+  const logWin = (milestoneId, note = '') => {
+    const win = { at: new Date().toISOString(), note: note.trim() || undefined };
+    const nextMilestones = training.milestones.map((m) =>
+      m.id === milestoneId ? { ...m, wins: [...(m.wins || []), win] } : m
+    );
+    const next = { ...training, milestones: nextMilestones };
+    setTraining(next);
+    if (dog?.id) setStoredGoalPath(dog.id, next);
+    setLogWinFor(null);
+    setLogWinNote('');
   };
+
+  const milestonesList = training.milestones.length ? training.milestones : DEFAULT_MILESTONES.map((m) => ({ ...m, wins: [] }));
+  const nextStepIndex = milestonesList.findIndex((m) => !m.wins || m.wins.length === 0);
+  const suggestion = nextStepIndex >= 0
+    ? NEXT_STEP_SUGGESTIONS[nextStepIndex]
+    : ALL_STEPS_STARTED;
 
   async function handleFile(files) {
     setUploadError('');
@@ -307,18 +327,54 @@ export default function DogProfile() {
         {/* Training focus */}
         <section className="dog-panel dog-panel--training">
           <h2 className="dog-panel-title">Training focus</h2>
-          <div className="dog-training-progress-wrap">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={training.progress}
-              onChange={(e) => handleTrainingChange('progress', Number(e.target.value))}
-              className="dog-training-progress-input"
-              aria-label="Training progress"
-            />
+          <p className="dog-training-focus-label">Working on: {value('reactivityTags') || '—'}</p>
+
+          <div className="dog-goal-path" role="list">
+            {(training.milestones.length ? training.milestones : DEFAULT_MILESTONES.map((m) => ({ ...m, wins: [] }))).map((milestone, index) => (
+              <div key={milestone.id} className="dog-goal-step" role="listitem">
+                <div className="dog-goal-step-paw-wrap">
+                  <span className={`dog-goal-paw ${(milestone.wins && milestone.wins.length > 0) ? 'dog-goal-paw--done' : ''}`} aria-hidden>🐾</span>
+                  {index < (training.milestones.length || DEFAULT_MILESTONES.length) - 1 && <span className="dog-goal-path-connector" aria-hidden />}
+                </div>
+                <div className="dog-goal-step-body">
+                  <p className="dog-goal-step-label">{milestone.label}</p>
+                  {(milestone.wins && milestone.wins.length > 0) && (
+                    <p className="dog-goal-step-count">{milestone.wins.length} {milestone.wins.length === 1 ? 'win' : 'wins'} logged</p>
+                  )}
+                  {logWinFor === milestone.id ? (
+                    <div className="dog-log-win-form">
+                      <input
+                        ref={logWinInputRef}
+                        type="text"
+                        className="dog-log-win-input"
+                        placeholder="Optional note…"
+                        value={logWinNote}
+                        onChange={(e) => setLogWinNote(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') { e.preventDefault(); logWin(milestone.id, logWinNote); }
+                          if (e.key === 'Escape') { setLogWinFor(null); setLogWinNote(''); }
+                        }}
+                        aria-label="Note for this win"
+                      />
+                      <div className="dog-log-win-actions">
+                        <button type="button" className="btn btn-primary btn-sm" onClick={() => logWin(milestone.id, logWinNote)}>Log win</button>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setLogWinFor(null); setLogWinNote(''); }}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" className="dog-log-win-btn" onClick={() => { setLogWinFor(milestone.id); setLogWinNote(''); setTimeout(() => logWinInputRef.current?.focus(), 50); }}>
+                      + Log a win
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-          <p className="dog-training-notes">Working on: {value('reactivityTags') || '—'}</p>
+
+          <div className="dog-what-to-try-next">
+            <h3 className="dog-what-to-try-next-title">What to try next</h3>
+            <p className="dog-what-to-try-next-text">{suggestion}</p>
+          </div>
           {activeField === 'trainingNotes' ? (
             <textarea
               ref={inlineInputRef}

@@ -2063,6 +2063,47 @@ input, textarea {
   color: var(--text-muted);
 }
 
+.home-training-card--link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.home-training-card--link:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-soft);
+}
+
+.home-training-steps {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.home-training-paws {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.home-training-paw {
+  font-size: 1rem;
+  opacity: 0.35;
+  filter: grayscale(0.6);
+}
+
+.home-training-paw--done {
+  opacity: 1;
+  filter: none;
+}
+
+.home-training-steps-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 /* 4. My dogs snapshot cards */
 .home-dog-snapshots {
   display: grid;
@@ -2604,26 +2645,141 @@ input, textarea {
   color: var(--text-muted);
 }
 
-/* Training focus */
-.dog-training-progress-wrap {
-  height: 10px;
+/* Training focus – goal path checklist */
+.dog-training-focus-label {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.dog-goal-path {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.dog-goal-step {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dog-goal-step:last-child {
+  margin-bottom: 0;
+}
+
+.dog-goal-step-paw-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dog-goal-paw {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  opacity: 0.4;
+  filter: grayscale(0.5);
+  transition: opacity 0.2s, filter 0.2s;
+}
+
+.dog-goal-paw--done {
+  opacity: 1;
+  filter: none;
+}
+
+.dog-goal-path-connector {
+  width: 2px;
+  flex: 1;
+  min-height: 12px;
+  margin-top: 4px;
   background: var(--border);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 0.75rem;
+  border-radius: 1px;
 }
 
-.dog-training-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-soft) 0%, var(--accent) 100%);
-  border-radius: 999px;
+.dog-goal-step-body {
+  flex: 1;
+  min-width: 0;
 }
 
-.dog-training-progress-input {
+.dog-goal-step-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dog-goal-step-count {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--teal);
+  font-weight: 500;
+}
+
+.dog-log-win-btn {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dog-log-win-btn:hover {
+  text-decoration: underline;
+}
+
+.dog-log-win-form {
+  margin-top: 0.5rem;
+}
+
+.dog-log-win-input {
   width: 100%;
-  height: 10px;
+  max-width: 280px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  margin-bottom: 0.5rem;
+}
+
+.dog-log-win-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.dog-log-win-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dog-what-to-try-next {
+  background: var(--accent-soft);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+}
+
+.dog-what-to-try-next-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.dog-what-to-try-next-text {
   margin: 0;
-  accent-color: var(--accent);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
 }
 
 .dog-training-notes-input {

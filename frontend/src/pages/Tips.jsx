@@ -11,6 +11,12 @@ function getStoredTraining(id) {
     const raw = localStorage.getItem(STORAGE_KEY(id));
     if (!raw) return { progress: 50, notes: '' };
     const data = JSON.parse(raw);
+    if (data.milestones && Array.isArray(data.milestones)) {
+      const total = data.milestones.length;
+      const withWins = data.milestones.filter((m) => m.wins && m.wins.length > 0).length;
+      const progress = total ? Math.round((withWins / total) * 100) : 50;
+      return { progress, notes: data.notes || '' };
+    }
     return { progress: Math.min(100, Math.max(0, Number(data.progress) || 50)), notes: data.notes || '' };
   } catch {
     return { progress: 50, notes: '' };
