@@ -333,6 +333,14 @@ input, textarea {
   color: var(--text-muted);
 }
 
+.add-dog-form .form-group {
+  margin-bottom: 0.75rem;
+}
+
+.add-dog-form .form-group:last-of-type {
+  margin-bottom: 0.5rem;
+}
+
 .app-page-lead {
   color: var(--text-muted);
   margin: 0 0 1.5rem;

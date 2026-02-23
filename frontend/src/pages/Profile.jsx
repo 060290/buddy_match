@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Profile() {
   const { user, refreshMe, updateUser } = useAuth();
@@ -404,18 +404,24 @@ export default function Profile() {
           </section>
 
           <section className="card profile-dogs-card">
-            <h2 style={{ marginTop: 0 }}>Your dogs</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <h2 style={{ margin: 0 }}>Your dogs</h2>
+              <Link to="/profile/dogs/new" className="btn btn-primary btn-sm">Add dog</Link>
+            </div>
             {dogs.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>No dogs added yet. Add your dog so others know who they might meet.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>No dogs added yet. <Link to="/profile/dogs/new">Add your first dog</Link>.</p>
             ) : (
-              <ul className="profile-dogs-list">
-                {dogs.map((d) => (
-                  <li key={d.id} className="profile-dog-item">
-                    <strong>{d.name}</strong>
-                    <span className="profile-dog-meta">{d.size}{d.age && ` · ${d.age}`}{d.breed && ` · ${d.breed}`}{d.reactivityTags && ` · ${d.reactivityTags}`}</span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="profile-dogs-list">
+                  {dogs.map((d) => (
+                    <li key={d.id} className="profile-dog-item">
+                      <strong>{d.name}</strong>
+                      <span className="profile-dog-meta">{d.size}{d.age && ` · ${d.age}`}{d.breed && ` · ${d.breed}`}{d.reactivityTags && ` · ${d.reactivityTags}`}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/profile/dogs/new" className="btn btn-secondary btn-sm" style={{ marginTop: '0.5rem', display: 'inline-block' }}>Add another dog</Link>
+              </>
             )}
           </section>
         </aside>
