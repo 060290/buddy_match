@@ -772,7 +772,7 @@ input, textarea {
 
 .dashboard-map-row {
   display: grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: 1fr 300px;
   gap: 1.25rem;
   margin-bottom: 1.5rem;
   align-items: start;
@@ -782,6 +782,12 @@ input, textarea {
   .dashboard-map-row {
     grid-template-columns: 1fr;
   }
+}
+
+.dashboard-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .dashboard-map-card {
@@ -831,6 +837,63 @@ input, textarea {
   margin-bottom: 0;
   position: sticky;
   top: 1rem;
+}
+
+.dashboard-dogs-card {
+  margin-bottom: 0;
+}
+
+.dashboard-dog-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dashboard-dog-card {
+  background: var(--bg);
+  border-radius: var(--radius-chunky);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+}
+
+.dashboard-dog-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-dog-card-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.dashboard-dog-card-name {
+  font-size: 1rem;
+  color: var(--heading);
+}
+
+.dashboard-dog-card-details {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.dashboard-dog-card-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.dashboard-dog-card-row dt {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 4.5rem;
+}
+
+.dashboard-dog-card-row dd {
+  margin: 0;
 }
 
 .btn-sm {

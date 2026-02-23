@@ -8,7 +8,9 @@ import DashboardMap from '../components/DashboardMap';
 export default function Dashboard() {
   const { user } = useAuth();
   const [meetups, setMeetups] = useState([]);
+  const [dogs, setDogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dogsLoading, setDogsLoading] = useState(true);
 
   const radiusMiles = 50;
   const radiusKm = radiusMiles * 1.60934;
@@ -23,6 +25,13 @@ export default function Dashboard() {
       .catch(() => setMeetups([]))
       .finally(() => setLoading(false));
   }, [user?.lat, user?.lng, radiusKm]);
+
+  useEffect(() => {
+    api.get('/dogs')
+      .then((r) => setDogs(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setDogs([]))
+      .finally(() => setDogsLoading(false));
+  }, [user?.id]);
 
   const upcomingReminders = useMemo(() => {
     const now = new Date();
@@ -73,30 +82,79 @@ export default function Dashboard() {
               radiusMiles={radiusMiles}
             />
           </section>
-          <section className="card dashboard-reminders-card dashboard-reminders-card--side">
-            <div className="dashboard-section-header">
-              <h2 className="dashboard-section-title">Upcoming reminders</h2>
-              <Link to="/meetups" className="btn btn-secondary btn-sm">View all</Link>
-            </div>
-            {loading ? (
-              <p className="dashboard-muted">Loading…</p>
-            ) : upcomingReminders.length === 0 ? (
-              <p className="dashboard-muted">No upcoming meetups. <Link to="/meetups">Browse meetups</Link> or create one with the + button.</p>
-            ) : (
-              <ul className="dashboard-reminders-list">
-                {upcomingReminders.map((m) => (
-                  <li key={m.id} className="dashboard-reminder-item">
-                    <Link to={`/meetups/${m.id}`} className="dashboard-reminder-title">{m.title}</Link>
-                    <div className="dashboard-reminder-meta">
-                      {m.location && `${m.location} · `}
-                      {m.meetupAt ? new Date(m.meetupAt).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : 'No date set'}
-                      {m.rsvpCount > 0 && ` · ${m.rsvpCount} RSVP${m.rsvpCount !== 1 ? 's' : ''}`}
+          <div className="dashboard-side-col">
+            <section className="card dashboard-reminders-card dashboard-reminders-card--side">
+              <div className="dashboard-section-header">
+                <h2 className="dashboard-section-title">Upcoming reminders</h2>
+                <Link to="/meetups" className="btn btn-secondary btn-sm">View all</Link>
+              </div>
+              {loading ? (
+                <p className="dashboard-muted">Loading…</p>
+              ) : upcomingReminders.length === 0 ? (
+                <p className="dashboard-muted">No upcoming meetups. <Link to="/meetups">Browse meetups</Link> or create one with the + button.</p>
+              ) : (
+                <ul className="dashboard-reminders-list">
+                  {upcomingReminders.map((m) => (
+                    <li key={m.id} className="dashboard-reminder-item">
+                      <Link to={`/meetups/${m.id}`} className="dashboard-reminder-title">{m.title}</Link>
+                      <div className="dashboard-reminder-meta">
+                        {m.location && `${m.location} · `}
+                        {m.meetupAt ? new Date(m.meetupAt).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : 'No date set'}
+                        {m.rsvpCount > 0 && ` · ${m.rsvpCount} RSVP${m.rsvpCount !== 1 ? 's' : ''}`}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="card dashboard-dogs-card">
+              <div className="dashboard-section-header">
+                <h2 className="dashboard-section-title">Your dogs</h2>
+                <Link to="/profile" className="btn btn-secondary btn-sm">Edit</Link>
+              </div>
+              {dogsLoading ? (
+                <p className="dashboard-muted">Loading…</p>
+              ) : dogs.length === 0 ? (
+                <p className="dashboard-muted">No dogs yet. <Link to="/profile">Add a dog</Link> on your profile so buddies know who they might meet.</p>
+              ) : (
+                <div className="dashboard-dog-cards">
+                  {dogs.map((dog) => (
+                    <div key={dog.id} className="dashboard-dog-card">
+                      <div className="dashboard-dog-card-header">
+                        <span className="dashboard-dog-card-icon" aria-hidden>🐕</span>
+                        <strong className="dashboard-dog-card-name">{dog.name}</strong>
+                      </div>
+                      <dl className="dashboard-dog-card-details">
+                        <div className="dashboard-dog-card-row">
+                          <dt>Size</dt>
+                          <dd>{dog.size}</dd>
+                        </div>
+                        {dog.age && (
+                          <div className="dashboard-dog-card-row">
+                            <dt>Age</dt>
+                            <dd>{dog.age}</dd>
+                          </div>
+                        )}
+                        {dog.breed && (
+                          <div className="dashboard-dog-card-row">
+                            <dt>Breed</dt>
+                            <dd>{dog.breed}</dd>
+                          </div>
+                        )}
+                        {dog.reactivityTags && (
+                          <div className="dashboard-dog-card-row">
+                            <dt>Reactivity</dt>
+                            <dd>{dog.reactivityTags}</dd>
+                          </div>
+                        )}
+                      </dl>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
         </div>
       </div>
     </div>
