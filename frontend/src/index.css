@@ -310,22 +310,97 @@ input, textarea {
   margin: 0;
 }
 
-.profile-dogs-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.profile-dog-item {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
+.profile-dog-cards {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.5rem;
 }
 
-.profile-dog-item:last-child {
-  border-bottom: none;
+.profile-dog-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-chunky);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.profile-dog-card:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile-dog-card-avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.profile-dog-card-avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-dog-card-initials {
+  display: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.profile-dog-card-initials--show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-dog-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.profile-dog-card-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.profile-dog-card-meta {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-dog-card-chevron {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: var(--text-muted);
+}
+
+.profile-dog-add-another {
+  margin-top: 0.75rem;
+  display: inline-block;
 }
 
 .profile-dog-meta {
@@ -339,6 +414,107 @@ input, textarea {
 
 .add-dog-form .form-group:last-of-type {
   margin-bottom: 0.5rem;
+}
+
+/* Dog avatar (Add / Edit dog) */
+.dog-edit-avatar-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.dog-edit-avatar-wrap {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.dog-edit-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dog-edit-avatar-initials {
+  display: none;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.dog-edit-avatar-initials--show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dog-edit-avatar-card .form-group {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+}
+
+.dog-photo-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.dog-edit-avatar-zone {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-chunky);
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  border: 2px dashed var(--border);
+}
+
+.dog-edit-avatar-zone:hover,
+.dog-edit-avatar-zone:focus {
+  outline: none;
+  background: var(--accent-soft);
+  border-color: var(--accent-muted, rgba(240, 139, 122, 0.5));
+}
+
+.dog-edit-avatar-zone--drag {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.dog-edit-avatar-zone .dog-edit-avatar-wrap {
+  margin: 0;
+}
+
+.dog-edit-avatar-zone-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.link-button.dog-paste-link-btn {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.dog-paste-link-field {
+  margin-top: 0.5rem;
 }
 
 .app-page-lead {
@@ -700,6 +876,17 @@ input, textarea {
   background: var(--surface);
   border-color: var(--accent);
   color: var(--accent-hover);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(198, 40, 40, 0.3);
+}
+
+.btn-danger:hover:not(:disabled) {
+  opacity: 0.95;
+  box-shadow: 0 6px 20px rgba(198, 40, 40, 0.4);
 }
 
 .form-group {

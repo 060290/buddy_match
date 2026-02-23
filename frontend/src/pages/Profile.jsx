@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api';
 import { Link, useLocation } from 'react-router-dom';
+import { resizeImageForAvatar } from '../utils/avatar';
 
 export default function Profile() {
   const { user, refreshMe, updateUser } = useAuth();
@@ -63,55 +64,16 @@ export default function Profile() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  const MAX_AVATAR_SIZE = 400;
-  const AVATAR_QUALITY = 0.88;
-
-  function resizeImage(file) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        const w = img.naturalWidth;
-        const h = img.naturalHeight;
-        const scale = Math.min(1, MAX_AVATAR_SIZE / Math.max(w, h));
-        const cw = Math.round(w * scale);
-        const ch = Math.round(h * scale);
-        const canvas = document.createElement('canvas');
-        canvas.width = cw;
-        canvas.height = ch;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, cw, ch);
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return reject(new Error('Could not process image'));
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = () => reject(new Error('Could not read image'));
-            reader.readAsDataURL(blob);
-          },
-          'image/jpeg',
-          AVATAR_QUALITY
-        );
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error('Invalid image file'));
-      };
-      img.src = url;
-    });
-  }
-
   async function handleFile(files) {
     setUploadError('');
     const file = files && files[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Please choose an image file (e.g. JPG or PNG).');
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+      setUploadError('Please choose an image (JPG, PNG, etc.) or a PDF.');
       return;
     }
     try {
-      const dataUrl = await resizeImage(file);
+      const dataUrl = await resizeImageForAvatar(file);
       setForm((f) => ({ ...f, avatarUrl: dataUrl }));
     } catch (err) {
       setUploadError(err.message || 'Could not process image');
@@ -346,7 +308,7 @@ export default function Profile() {
                 <input
                   type="file"
                   ref={fileInputRef}
-                  accept="image/*"
+                  accept="image/*,application/pdf"
                   className="profile-photo-input"
                   aria-label="Upload profile photo"
                   onChange={onFileInputChange}
@@ -404,23 +366,34 @@ export default function Profile() {
           </section>
 
           <section className="card profile-dogs-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <h2 style={{ margin: 0 }}>Your dogs</h2>
-              <Link to="/profile/dogs/new" className="btn btn-primary btn-sm">Add dog</Link>
-            </div>
+            <h2 style={{ margin: 0, marginBottom: '0.75rem' }}>Your dogs</h2>
             {dogs.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>No dogs added yet. <Link to="/profile/dogs/new">Add your first dog</Link>.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>No dogs added yet. <Link to="/profile/dogs/new" className="btn btn-primary btn-sm" style={{ marginTop: '0.5rem', display: 'inline-block' }}>Add dog</Link></p>
             ) : (
               <>
-                <ul className="profile-dogs-list">
+                <div className="profile-dog-cards">
                   {dogs.map((d) => (
-                    <li key={d.id} className="profile-dog-item">
-                      <strong>{d.name}</strong>
-                      <span className="profile-dog-meta">{d.size}{d.age && ` · ${d.age}`}{d.breed && ` · ${d.breed}`}{d.reactivityTags && ` · ${d.reactivityTags}`}</span>
-                    </li>
+                    <Link key={d.id} to={`/profile/dogs/${d.id}`} className="profile-dog-card">
+                      <div className="profile-dog-card-avatar">
+                        {d.avatarUrl ? (
+                          <img src={d.avatarUrl} alt="" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('profile-dog-card-initials--show'); }} />
+                        ) : null}
+                        <span className={`profile-dog-card-initials ${d.avatarUrl ? '' : 'profile-dog-card-initials--show'}`} aria-hidden>
+                          {d.name ? d.name.trim().slice(0, 2).toUpperCase() : '?'}
+                        </span>
+                      </div>
+                      <div className="profile-dog-card-body">
+                        <span className="profile-dog-card-name">{d.name}</span>
+                        <span className="profile-dog-card-meta">
+                          {[d.size, d.age, d.breed].filter(Boolean).join(' · ')}
+                          {d.reactivityTags && ` · ${d.reactivityTags}`}
+                        </span>
+                      </div>
+                      <span className="profile-dog-card-chevron" aria-hidden>›</span>
+                    </Link>
                   ))}
-                </ul>
-                <Link to="/profile/dogs/new" className="btn btn-secondary btn-sm" style={{ marginTop: '0.5rem', display: 'inline-block' }}>Add another dog</Link>
+                </div>
+                <Link to="/profile/dogs/new" className="btn btn-secondary btn-sm profile-dog-add-another">Add another dog</Link>
               </>
             )}
           </section>

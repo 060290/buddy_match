@@ -13,7 +13,7 @@ router.get('/me', async (req, res) => {
       select: {
         id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true,
         experience: true, availability: true, safetyPledgedAt: true, createdAt: true,
-        dogs: { select: { id: true, name: true, size: true, age: true, breed: true, reactivityTags: true, triggers: true } },
+        dogs: { select: { id: true, name: true, avatarUrl: true, size: true, age: true, breed: true, reactivityTags: true, triggers: true } },
       },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });

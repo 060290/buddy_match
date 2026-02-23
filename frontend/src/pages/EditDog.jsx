@@ -1,19 +1,47 @@
-import React, { useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { resizeImageForAvatar } from '../utils/avatar';
 
 const INITIAL_FORM = { name: '', avatarUrl: '', size: '', age: '', breed: '', reactivityTags: '', triggers: '' };
 
-export default function AddDog() {
+function getInitials(name) {
+  if (!name?.trim()) return '?';
+  return name.trim().slice(0, 2).toUpperCase();
+}
+
+export default function EditDog() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const [dog, setDog] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(INITIAL_FORM);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [uploadError, setUploadError] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const [showPasteLink, setShowPasteLink] = useState(false);
+
+  useEffect(() => {
+    api.get(`/dogs/${id}`)
+      .then((r) => {
+        const d = r.data;
+        setDog(d);
+        setForm({
+          name: d.name || '',
+          avatarUrl: d.avatarUrl || '',
+          size: d.size || '',
+          age: d.age || '',
+          breed: d.breed || '',
+          reactivityTags: d.reactivityTags || '',
+          triggers: d.triggers || '',
+        });
+      })
+      .catch(() => setDog(null))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   const handleChange = (e) => {
     setError('');
@@ -66,20 +94,37 @@ export default function AddDog() {
     setSaving(true);
     setError('');
     try {
-      await api.post('/dogs', form);
+      await api.patch(`/dogs/${id}`, form);
       navigate('/profile');
     } catch (err) {
-      setError(err.message || 'Could not add dog');
+      setError(err.message || 'Could not save');
     } finally {
       setSaving(false);
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(`Remove ${dog.name} from your profile? This can’t be undone.`)) return;
+    setDeleting(true);
+    setError('');
+    try {
+      await api.delete(`/dogs/${id}`);
+      navigate('/profile');
+    } catch (err) {
+      setError(err.message || 'Could not remove dog');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (loading) return <div className="app-page"><div className="app-page-content">Loading…</div></div>;
+  if (!dog) return <div className="app-page"><div className="app-page-content"><p className="error-msg">Dog not found.</p><Link to="/profile">Back to profile</Link></div></div>;
+
   return (
     <div className="app-page">
       <div className="app-page-content app-page-content--narrow">
-        <h1>Add a dog</h1>
-        <p className="app-page-lead">Add your dog so other buddies know who they might meet at meetups.</p>
+        <h1>Edit {dog.name}</h1>
+        <p className="app-page-lead">Update your dog’s profile so buddies know who they might meet.</p>
 
         <div className="dog-edit-avatar-card card">
           <input
@@ -106,7 +151,7 @@ export default function AddDog() {
                 <img src={form.avatarUrl} alt="" className="dog-edit-avatar-img" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('dog-edit-avatar-initials--show'); }} />
               ) : null}
               <span className={`dog-edit-avatar-initials ${form.avatarUrl ? '' : 'dog-edit-avatar-initials--show'}`} aria-hidden>
-                {form.name ? form.name.trim().slice(0, 2).toUpperCase() : '?'}
+                {getInitials(form.name)}
               </span>
             </div>
             <span className="dog-edit-avatar-zone-label">
@@ -158,11 +203,18 @@ export default function AddDog() {
           {error && <p className="error-msg">{error}</p>}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Adding…' : 'Add dog'}
+              {saving ? 'Saving…' : 'Save changes'}
             </button>
             <Link to="/profile" className="btn btn-ghost">Cancel</Link>
           </div>
         </form>
+
+        <div className="card" style={{ marginTop: '1.5rem', borderColor: 'var(--danger-muted, #e57373)' }}>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: 'var(--text-muted)' }}>Remove this dog from your profile.</p>
+          <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+            {deleting ? 'Removing…' : 'Delete dog'}
+          </button>
+        </div>
       </div>
     </div>
   );

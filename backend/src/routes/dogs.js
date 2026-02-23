@@ -18,14 +18,25 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const dog = await prisma.dog.findFirst({ where: { id: req.params.id, ownerId: req.user.id } });
+    if (!dog) return res.status(404).json({ error: 'Dog not found' });
+    res.json(dog);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.post('/', async (req, res) => {
   try {
-    const { name, size, age, breed, reactivityTags, triggers } = req.body;
+    const { name, avatarUrl, size, age, breed, reactivityTags, triggers } = req.body;
     if (!name || !size) return res.status(400).json({ error: 'Name and size required' });
     const dog = await prisma.dog.create({
       data: {
         ownerId: req.user.id,
         name: name.trim(),
+        avatarUrl: avatarUrl?.trim() || null,
         size: size.trim(),
         age: age?.trim() || null,
         breed: breed?.trim() || null,
@@ -43,11 +54,12 @@ router.patch('/:id', async (req, res) => {
   try {
     const dog = await prisma.dog.findFirst({ where: { id: req.params.id, ownerId: req.user.id } });
     if (!dog) return res.status(404).json({ error: 'Dog not found' });
-    const { name, size, age, breed, reactivityTags, triggers } = req.body;
+    const { name, avatarUrl, size, age, breed, reactivityTags, triggers } = req.body;
     const updated = await prisma.dog.update({
       where: { id: req.params.id },
       data: {
         ...(name !== undefined && { name: name?.trim() }),
+        ...(avatarUrl !== undefined && { avatarUrl: avatarUrl?.trim() || null }),
         ...(size !== undefined && { size: size?.trim() }),
         ...(age !== undefined && { age: age?.trim() || null }),
         ...(breed !== undefined && { breed: breed?.trim() || null }),
