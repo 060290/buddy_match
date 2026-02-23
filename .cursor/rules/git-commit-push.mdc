@@ -5,9 +5,9 @@ alwaysApply: true
 
 # Git: commit and push after every change
 
-After making any code changes, always end by generating the exact terminal commands to commit and push to GitHub.
+**You MUST always** end every response that involves code or file changes by giving the user the exact terminal commands to commit and push to GitHub. Do this every time, without exception, even if the user does not ask.
 
-**Always provide this block:**
+**Always provide this block at the end of your response:**
 
 ```bash
 cd /Users/ellie/Desktop/buddy_match

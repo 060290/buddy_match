@@ -1380,6 +1380,371 @@ input, textarea {
   max-width: 960px;
 }
 
+/* ========== Home dashboard (dog meetup social app) ========== */
+.app-page--home {
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+.home-dashboard {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.home-header {
+  margin-bottom: 0;
+}
+
+.home-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--heading);
+}
+
+.home-tagline {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.home-pledge-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.home-pledge-card {
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+}
+
+.home-section {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 1.5rem 1.5rem 1.75rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.home-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.home-section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--heading);
+  letter-spacing: -0.01em;
+}
+
+.home-section-action {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.home-section-action:hover {
+  text-decoration: underline;
+  color: var(--accent);
+}
+
+.home-empty {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.home-empty a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.home-empty a:hover {
+  text-decoration: underline;
+}
+
+/* 1. Upcoming meetups card list */
+.home-meetup-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.home-meetup-card {
+  display: block;
+  padding: 1rem 1.2rem;
+  background: var(--bg);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.home-meetup-card:hover {
+  border-color: var(--accent-muted);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-meetup-card-title {
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.home-meetup-card:hover .home-meetup-card-title {
+  color: var(--accent);
+}
+
+.home-meetup-card-meta {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.home-meetup-card-meta span + span::before {
+  content: ' · ';
+}
+
+.home-meetup-badge {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: var(--teal-soft);
+  color: var(--teal);
+  border-radius: 999px;
+}
+
+/* 2. Map preview */
+.home-section--map {
+  overflow: hidden;
+}
+
+.home-map-wrap {
+  height: 260px;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.home-map-wrap .dashboard-map-wrap {
+  height: 100%;
+  border-radius: 16px;
+}
+
+.home-map-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.home-map-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* 3. Dog training focus cards */
+.home-training-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.home-training-card {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+}
+
+.home-training-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.home-training-dog-avatar {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.home-training-dog-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--heading);
+}
+
+.home-training-focus {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.home-training-progress-wrap {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+
+.home-training-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-soft) 0%, var(--accent) 100%);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.home-training-progress-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* 4. My dogs snapshot cards */
+.home-dog-snapshots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.home-dog-snapshot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.1rem 0.75rem;
+  background: var(--bg);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.home-dog-snapshot:hover {
+  border-color: var(--accent-muted);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-2px);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.home-dog-snapshot-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+}
+
+.home-dog-snapshot-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-dog-snapshot-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.home-dog-snapshot-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* 5. Matches / friends activity preview */
+.home-friends-preview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.home-friend-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  text-decoration: none;
+  color: var(--text);
+  border-radius: 16px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.home-friend-preview:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.home-friend-preview-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.home-friend-preview-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-friend-preview-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .home-friends-preview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* Dashboard layout: social-app pattern with card sections */
 .app-page--dashboard .dashboard-layout {
   max-width: 960px;
