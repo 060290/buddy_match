@@ -348,12 +348,19 @@ input, textarea {
   margin: 0 0.5rem 0.25rem;
   border-radius: var(--radius-chunky);
   background: var(--bg);
+  text-decoration: none;
+  color: inherit;
+}
+
+.app-sidebar-user:hover {
+  background: var(--accent-soft);
+  color: inherit;
+  text-decoration: none;
 }
 
 .sidebar-avatar-link {
   flex-shrink: 0;
   display: block;
-  text-decoration: none;
   border-radius: 50%;
   overflow: hidden;
 }

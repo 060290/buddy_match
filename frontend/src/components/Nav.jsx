@@ -34,16 +34,16 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
     return (
       <aside className="app-sidebar">
         <div className="app-sidebar-header">{logo}</div>
-        <div className="app-sidebar-user">
-          <Link to="/profile" className="sidebar-avatar-link" title="Edit profile">
+        <Link to="/profile" className="app-sidebar-user" title="Go to profile">
+          <span className="sidebar-avatar-link">
             {user?.avatarUrl ? (
               <img src={user.avatarUrl} alt="" className="sidebar-avatar-img" />
             ) : (
               <span className="sidebar-avatar-initials">{initials}</span>
             )}
-          </Link>
+          </span>
           <span className="sidebar-user-name">{user?.name || 'Buddy'}</span>
-        </div>
+        </Link>
         <nav className="nav-sidebar">
           <NavLink to="/dashboard">Dashboard</NavLink>
           <NavLink to="/meetups">Meetups</NavLink>
