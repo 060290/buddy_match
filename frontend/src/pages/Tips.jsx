@@ -19,11 +19,25 @@ function getStoredTraining(id) {
 
 const SECTION_ORDER = ['workingOn', 'readYourDog', 'situation', 'quickAction', 'progressAware'];
 
+const SUPPORT_CATEGORY_ORDER = ['Basics', 'Dog behavior', 'Meetups', 'Training', 'Support'];
+
+function groupSupportByCategory(articles) {
+  if (!Array.isArray(articles)) return {};
+  return articles.reduce((acc, a) => {
+    const cat = a.category || 'Support';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(a);
+    return acc;
+  }, {});
+}
+
 export default function Tips() {
   const { user } = useAuth();
   const [dogs, setDogs] = useState([]);
   const [selectedDogId, setSelectedDogId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [supportByCategory, setSupportByCategory] = useState({});
+  const [supportLoading, setSupportLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -36,6 +50,22 @@ export default function Tips() {
       .catch(() => setDogs([]))
       .finally(() => setLoading(false));
   }, [user?.id]);
+
+  useEffect(() => {
+    api.get('/support')
+      .then((r) => {
+        const data = r.data;
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+          setSupportByCategory(data);
+        } else if (Array.isArray(data)) {
+          setSupportByCategory(groupSupportByCategory(data));
+        } else {
+          setSupportByCategory({});
+        }
+      })
+      .catch(() => setSupportByCategory({}))
+      .finally(() => setSupportLoading(false));
+  }, []);
 
   const selectedDog = dogs.find((d) => d.id === selectedDogId);
   const trainingProgress = selectedDogId ? getStoredTraining(selectedDogId).progress : 50;
@@ -127,6 +157,33 @@ export default function Tips() {
             })}
           </div>
         )}
+
+        <section className="tips-section tips-section--safety">
+          <h2 className="tips-section-title">Safety & boundaries</h2>
+          <p className="tips-section-hint">Credible guidance on dog behavior, safety, meetups, and when to seek professional help.</p>
+          {supportLoading ? (
+            <p className="tips-loading">Loading…</p>
+          ) : (() => {
+            const categories = SUPPORT_CATEGORY_ORDER.filter((c) => supportByCategory[c]?.length);
+            if (categories.length === 0) return <p className="tips-section-empty">No articles yet.</p>;
+            return (
+              <div className="tips-safety-grid">
+                {categories.map((cat) => (
+                  <div key={cat} className="tips-safety-category">
+                    <h3 className="tips-safety-category-title">{cat}</h3>
+                    <ul className="tips-safety-list">
+                      {supportByCategory[cat].map((a) => (
+                        <li key={a.id}>
+                          <Link to={`/support/${a.slug}`} className="tips-safety-link">{a.title}</Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </section>
       </div>
     </div>
   );
