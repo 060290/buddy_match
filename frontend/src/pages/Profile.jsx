@@ -9,7 +9,7 @@ export default function Profile() {
   const pledgeRef = useRef(null);
   const [profile, setProfile] = useState(null);
   const [dogs, setDogs] = useState([]);
-  const [form, setForm] = useState({ name: '', city: '', lat: '', lng: '', experience: '', availability: '' });
+  const [form, setForm] = useState({ name: '', avatarUrl: '', city: '', lat: '', lng: '', experience: '', availability: '' });
   const [saving, setSaving] = useState(false);
   const [pledging, setPledging] = useState(false);
   const [message, setMessage] = useState('');
@@ -27,6 +27,7 @@ export default function Profile() {
         setDogs(r.data.dogs || []);
         setForm({
           name: r.data.name || '',
+          avatarUrl: r.data.avatarUrl || '',
           city: r.data.city || '',
           lat: r.data.lat ?? '',
           lng: r.data.lng ?? '',
@@ -78,12 +79,39 @@ export default function Profile() {
     }
   };
 
-  if (!profile) return <div className="container" style={{ padding: '2rem' }}>Loading profile…</div>;
+  function getInitials(name, email) {
+    if (name?.trim()) return name.trim().split(/\s+/).map((n) => n[0]).slice(0, 2).join('').toUpperCase();
+    if (email?.[0]) return email[0].toUpperCase();
+    return '?';
+  }
+
+  if (!profile) return <div className="app-page"><div className="app-page-content">Loading profile…</div></div>;
 
   return (
-    <div className="container" style={{ paddingTop: '1.5rem', maxWidth: 600 }}>
-      <h1>Profile</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Manage your account and location so buddies can find you.</p>
+    <div className="app-page">
+      <div className="app-page-content app-page-content--narrow">
+        <h1>Profile</h1>
+        <p className="app-page-lead">Manage your account and location so buddies can find you.</p>
+
+        <div className="profile-picture-card card">
+          <div className="profile-picture-row">
+            <div className="profile-picture-wrap">
+              {form.avatarUrl ? (
+                <img src={form.avatarUrl} alt="" className="profile-picture-img" onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.add('profile-picture-fallback--show'); }} />
+              ) : null}
+              <span className={`profile-picture-fallback ${form.avatarUrl ? '' : 'profile-picture-fallback--show'}`} aria-hidden>
+                {getInitials(form.name, profile.email)}
+              </span>
+            </div>
+            <div className="profile-picture-form">
+              <div className="form-group">
+                <label>Profile picture URL</label>
+                <input type="url" name="avatarUrl" value={form.avatarUrl} onChange={handleChange} placeholder="https://…" />
+              </div>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>Paste a link to your photo. It will appear in the sidebar and on your profile.</p>
+            </div>
+          </div>
+        </div>
 
       <div ref={pledgeRef} id="safety-pledge">
         {profile.safetyPledgedAt ? (
@@ -158,6 +186,7 @@ export default function Profile() {
           </ul>
         )}
       </section>
+      </div>
     </div>
   );
 }

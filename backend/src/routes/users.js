@@ -11,7 +11,7 @@ router.get('/me', async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: {
-        id: true, email: true, name: true, city: true, lat: true, lng: true,
+        id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true,
         experience: true, availability: true, safetyPledgedAt: true, createdAt: true,
         dogs: { select: { id: true, name: true, size: true, age: true, breed: true, reactivityTags: true, triggers: true } },
       },
@@ -25,18 +25,19 @@ router.get('/me', async (req, res) => {
 
 router.patch('/me', async (req, res) => {
   try {
-    const { name, city, lat, lng, experience, availability } = req.body;
+    const { name, avatarUrl, city, lat, lng, experience, availability } = req.body;
     const user = await prisma.user.update({
       where: { id: req.user.id },
       data: {
         ...(name !== undefined && { name: name?.trim() || null }),
+        ...(avatarUrl !== undefined && { avatarUrl: avatarUrl?.trim() || null }),
         ...(city !== undefined && { city: city?.trim() || null }),
         ...(lat !== undefined && { lat: lat == null ? null : Number(lat) }),
         ...(lng !== undefined && { lng: lng == null ? null : Number(lng) }),
         ...(experience !== undefined && { experience: experience?.trim() || null }),
         ...(availability !== undefined && { availability: availability?.trim() || null }),
       },
-      select: { id: true, email: true, name: true, city: true, lat: true, lng: true, experience: true, availability: true, safetyPledgedAt: true },
+      select: { id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true, experience: true, availability: true, safetyPledgedAt: true },
     });
     res.json(user);
   } catch (e) {

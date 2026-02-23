@@ -13,6 +13,7 @@ import Messages from './pages/Messages';
 import Support from './pages/Support';
 import Article from './pages/Article';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import Nearby from './pages/Nearby';
 
 function PrivateRoute({ children }) {
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
         <Route path="nearby" element={<PrivateRoute><Nearby /></PrivateRoute>} />
         <Route path="profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+        <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
         experience: experience?.trim() || null,
         availability: availability?.trim() || null,
       },
-      select: { id: true, email: true, name: true, city: true, lat: true, lng: true, safetyPledgedAt: true },
+      select: { id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true, safetyPledgedAt: true },
     });
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, COOKIE_OPTS).status(201).json({ user, token });
@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.passwordHash)))
       return res.status(401).json({ error: 'Invalid email or password' });
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
-    const safe = { id: user.id, email: user.email, name: user.name, city: user.city, lat: user.lat, lng: user.lng, safetyPledgedAt: user.safetyPledgedAt };
+    const safe = { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl, city: user.city, lat: user.lat, lng: user.lng, safetyPledgedAt: user.safetyPledgedAt };
     res.cookie('token', token, COOKIE_OPTS).json({ user: safe, token });
   } catch (e) {
     res.status(500).json({ error: e.message || 'Login failed' });
@@ -58,7 +58,7 @@ router.get('/me', async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, city: true, lat: true, lng: true, experience: true, availability: true, safetyPledgedAt: true },
+      select: { id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true, experience: true, availability: true, safetyPledgedAt: true },
     });
     if (!user) return res.status(401).json({ error: 'User not found' });
     res.json(user);

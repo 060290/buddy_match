@@ -24,8 +24,9 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="container dashboard-page">
-      <div className="dashboard-hero">
+    <div className="app-page">
+      <div className="app-page-content">
+    <div className="dashboard-hero">
         <div className="dashboard-welcome">
           <h1>Hi{user?.name ? `, ${user.name}` : ''}</h1>
           <p className="dashboard-tagline">
@@ -101,6 +102,7 @@ export default function Dashboard() {
             </ul>
           )}
         </section>
+      </div>
       </div>
     </div>
   );

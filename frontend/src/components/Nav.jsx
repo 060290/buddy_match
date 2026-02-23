@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Nav({ isLoggedIn, variant = 'header' }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -19,9 +19,22 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
   );
 
   if (variant === 'sidebar' && isLoggedIn) {
+    const initials = user?.name
+      ? user.name.trim().split(/\s+/).map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+      : user?.email?.[0]?.toUpperCase() ?? '?';
     return (
       <aside className="app-sidebar">
         <div className="app-sidebar-header">{logo}</div>
+        <div className="app-sidebar-user">
+          <Link to="/profile" className="sidebar-avatar-link" title="Edit profile">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" className="sidebar-avatar-img" />
+            ) : (
+              <span className="sidebar-avatar-initials">{initials}</span>
+            )}
+          </Link>
+          <span className="sidebar-user-name">{user?.name || 'Buddy'}</span>
+        </div>
         <nav className="nav-sidebar">
           <NavLink to="/dashboard">Dashboard</NavLink>
           <NavLink to="/meetups">Meetups</NavLink>
@@ -29,6 +42,7 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
           <NavLink to="/messages">Messages</NavLink>
           <NavLink to="/profile">Profile</NavLink>
           <NavLink to="/nearby">Nearby</NavLink>
+          <NavLink to="/settings">Settings</NavLink>
           <button type="button" className="btn btn-ghost nav-sidebar-btn" onClick={handleLogout}>Log out</button>
         </nav>
       </aside>
