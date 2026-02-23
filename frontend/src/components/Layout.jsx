@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Nav from './Nav';
 
@@ -14,6 +14,9 @@ export default function Layout() {
         <main className="app-main">
           <Outlet />
         </main>
+        <Link to="/meetups/new" className="fab fab--create-meetup" title="Create meetup" aria-label="Create meetup">
+          <span className="fab-icon" aria-hidden>+</span>
+        </Link>
       </div>
     );
   }

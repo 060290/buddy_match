@@ -37,12 +37,28 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
     const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
-    if (!user || !(await bcrypt.compare(password, user.passwordHash)))
-      return res.status(401).json({ error: 'Invalid email or password' });
+    if (!user) return res.status(401).json({ error: 'Invalid email or password' });
+    let passwordMatch = false;
+    try {
+      passwordMatch = await bcrypt.compare(password, user.passwordHash || '');
+    } catch (_) {
+      // Invalid hash format or bcrypt error → treat as wrong password
+    }
+    if (!passwordMatch) return res.status(401).json({ error: 'Invalid email or password' });
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
-    const safe = { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl, city: user.city, lat: user.lat, lng: user.lng, safetyPledgedAt: user.safetyPledgedAt };
+    const safe = {
+      id: user.id,
+      email: user.email,
+      name: user.name ?? null,
+      avatarUrl: user.avatarUrl ?? null,
+      city: user.city ?? null,
+      lat: user.lat ?? null,
+      lng: user.lng ?? null,
+      safetyPledgedAt: user.safetyPledgedAt ?? null,
+    };
     res.cookie('token', token, COOKIE_OPTS).json({ user: safe, token });
   } catch (e) {
+    console.error('Login error:', e);
     res.status(500).json({ error: e.message || 'Login failed' });
   }
 });
