@@ -52,7 +52,6 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
             Messages
             {hasMessages && <span className="nav-sidebar-badge" aria-label="You have messages">!</span>}
           </NavLink>
-          <NavLink to="/profile">Profile</NavLink>
           <NavLink to="/nearby">Nearby</NavLink>
           <NavLink to="/settings">Settings</NavLink>
           <button type="button" className="btn btn-ghost nav-sidebar-btn" onClick={handleLogout}>Log out</button>
@@ -72,7 +71,6 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
               <Link to="/meetups">Meetups</Link>
               <Link to="/support">Safety tips</Link>
               <Link to="/messages">Messages</Link>
-              <Link to="/profile">Profile</Link>
               <Link to="/nearby">Nearby</Link>
               <button type="button" className="btn btn-ghost nav-btn" onClick={handleLogout}>Log out</button>
             </>
