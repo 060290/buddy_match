@@ -8,15 +8,14 @@ router.get('/', optionalAuth, async (req, res) => {
   try {
     const { lat, lng, radiusKm = 100, q } = req.query;
     const search = typeof q === 'string' && q.trim().length > 0 ? q.trim() : null;
-    const where = search
-      ? {
-          OR: [
-            { title: { contains: search } },
-            { body: { contains: search } },
-            { location: { contains: search } },
-          ],
-        }
-      : {};
+    const where = { ...(req.user && { authorId: { not: req.user.id } }) };
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { body: { contains: search } },
+        { location: { contains: search } },
+      ];
+    }
     const posts = await prisma.post.findMany({
       where,
       orderBy: { meetupAt: 'asc' },
