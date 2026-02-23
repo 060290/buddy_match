@@ -46,6 +46,7 @@ export default function Nav({ isLoggedIn, variant = 'header' }) {
           <NavLink to="/profile">Profile</NavLink>
         </nav>
         <nav className="nav-sidebar nav-sidebar--secondary" aria-label="More">
+          <NavLink to="/tips">Tips</NavLink>
           <NavLink to="/support">Safety tips</NavLink>
           <NavLink to="/nearby">Nearby</NavLink>
           <NavLink to="/settings">Settings</NavLink>

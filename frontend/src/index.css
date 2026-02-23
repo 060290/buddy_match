@@ -331,10 +331,276 @@ input, textarea {
   align-items: start;
 }
 
+.profile-page-content--sections {
+  grid-template-columns: 1fr 280px;
+  gap: 1.5rem 1.75rem;
+}
+
+.profile-page-content--sections .profile-section-identity {
+  grid-column: 1 / -1;
+}
+
+.profile-page-content--sections .profile-form-sections {
+  min-width: 0;
+}
+
 @media (max-width: 720px) {
-  .profile-page-content {
+  .profile-page-content,
+  .profile-page-content--sections {
     grid-template-columns: 1fr;
   }
+}
+
+/* Profile sections – friendly rounded UI */
+.profile-section-identity {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.profile-section-identity-top {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.profile-section-avatar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.profile-section-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-section-avatar .profile-picture-img,
+.profile-section-avatar .profile-picture-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  font-size: 1.5rem;
+}
+
+.profile-section-avatar-change {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.profile-section-avatar-change:hover {
+  text-decoration: underline;
+}
+
+.profile-section-identity-info {
+  min-width: 0;
+}
+
+.profile-identity-name {
+  margin: 0 0 0.2rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--heading);
+}
+
+.profile-identity-email {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.profile-identity-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.profile-identity-meta span:not(:first-child)::before {
+  content: ' · ';
+  color: var(--text-muted);
+}
+
+.profile-identity-meta a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.profile-section-photo-edit {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.profile-photo-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.profile-form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.profile-section-card {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.profile-section-card-title {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.profile-dogs-count {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.profile-dogs-count a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.profile-pledge-badge {
+  margin: 0 0 0.75rem;
+  padding: 0.35rem 0.75rem;
+  display: inline-block;
+  background: var(--teal-soft);
+  color: var(--teal);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.profile-pledge-cta p {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.profile-activity-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.profile-activity-item {
+  text-align: center;
+  padding: 0.75rem;
+  background: var(--surface-warm);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+
+.profile-activity-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.profile-activity-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.profile-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.profile-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.profile-toggle-row input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+}
+
+.profile-account-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-account-label {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.profile-account-value {
+  color: var(--text);
+}
+
+.profile-save-success {
+  color: var(--teal);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.profile-save-btn {
+  margin-top: 0.5rem;
+}
+
+.profile-dogs-empty {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.profile-dogs-empty a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.profile-section-card .profile-location-wrap {
+  position: relative;
+}
+
+.profile-section-card .form-group {
+  margin-bottom: 1rem;
+}
+
+.profile-section-card .form-group:last-of-type {
+  margin-bottom: 0;
 }
 
 .profile-main {
@@ -3959,4 +4225,300 @@ input, textarea {
 
 .messages-sidebar .empty-sidebar a {
   font-weight: 700;
+}
+
+/* ========== Tips page – dog selector, sections, cards ========== */
+.app-page--tips {
+  padding: 1rem 1.25rem 2rem;
+}
+
+.tips-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.tips-header {
+  margin-bottom: 2rem;
+}
+
+.tips-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--heading);
+}
+
+.tips-subtitle {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.tips-loading {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.tips-no-dogs {
+  padding: 1.5rem;
+  border-radius: 20px;
+}
+
+.tips-no-dogs p {
+  margin: 0 0 0.75rem;
+  color: var(--text);
+}
+
+.tips-dog-selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.tips-dog-selector-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tips-dog-selector-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tips-dog-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.tips-dog-chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.tips-dog-chip--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: var(--shadow-soft);
+}
+
+.tips-dog-chip-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.tips-dog-chip-initials {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tips-dog-profile-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-left: 0.25rem;
+}
+
+.tips-dog-profile-link:hover {
+  text-decoration: underline;
+}
+
+.tips-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.tips-section {
+  margin: 0;
+}
+
+.tips-section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.tips-section-hint {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.tips-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.tips-card {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tips-card--link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.tips-card--link:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+.tips-card--link:hover .tips-card-title {
+  color: var(--accent);
+}
+
+.tips-card-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--heading);
+  transition: color 0.2s;
+}
+
+.tips-card-desc {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.tips-card-cta {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ========== Tip detail page – consistent structure ========== */
+.app-page--tip-detail {
+  padding: 1rem 1.25rem 2rem;
+}
+
+.tip-detail-content {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.tip-detail-back {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.tip-detail-back:hover {
+  text-decoration: underline;
+}
+
+.tip-detail-article {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 1.75rem 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.tip-detail-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tip-detail-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--heading);
+}
+
+.tip-detail-lead {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.tip-detail-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tip-detail-block {
+  margin: 0;
+}
+
+.tip-detail-block-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+.tip-detail-block-body {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.tip-detail-block--avoid .tip-detail-block-title {
+  color: var(--warm);
+}
+
+.tip-detail-block--improvement .tip-detail-block-title {
+  color: var(--teal);
+}
+
+.tip-detail-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.tip-detail-list li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.tip-detail-list--steps {
+  list-style: decimal;
+}
+
+.tip-detail-list--avoid {
+  list-style: disc;
 }

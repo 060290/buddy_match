@@ -11,13 +11,23 @@ router.get('/me', async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: {
-        id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true,
+        id: true, email: true, name: true, avatarUrl: true, bio: true, city: true, lat: true, lng: true,
         experience: true, availability: true, safetyPledgedAt: true, createdAt: true,
+        distanceComfortKm: true, meetupStyle: true, dogSizeComfort: true, boundariesNote: true,
         dogs: { select: { id: true, name: true, avatarUrl: true, size: true, age: true, breed: true, reactivityTags: true, triggers: true } },
       },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
+    const [rsvpCount, followingCount] = await Promise.all([
+      prisma.rsvp.count({ where: { userId: req.user.id } }),
+      prisma.follow.count({ where: { followerId: req.user.id } }),
+    ]);
+    res.json({
+      ...user,
+      meetupsAttended: rsvpCount,
+      matchesCount: followingCount,
+      dogsCount: (user.dogs || []).length,
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -25,19 +35,24 @@ router.get('/me', async (req, res) => {
 
 router.patch('/me', async (req, res) => {
   try {
-    const { name, avatarUrl, city, lat, lng, experience, availability } = req.body;
+    const { name, avatarUrl, bio, city, lat, lng, experience, availability, distanceComfortKm, meetupStyle, dogSizeComfort, boundariesNote } = req.body;
     const user = await prisma.user.update({
       where: { id: req.user.id },
       data: {
         ...(name !== undefined && { name: name?.trim() || null }),
         ...(avatarUrl !== undefined && { avatarUrl: avatarUrl?.trim() || null }),
+        ...(bio !== undefined && { bio: bio?.trim() || null }),
         ...(city !== undefined && { city: city?.trim() || null }),
         ...(lat !== undefined && { lat: lat == null ? null : Number(lat) }),
         ...(lng !== undefined && { lng: lng == null ? null : Number(lng) }),
         ...(experience !== undefined && { experience: experience?.trim() || null }),
         ...(availability !== undefined && { availability: availability?.trim() || null }),
+        ...(distanceComfortKm !== undefined && { distanceComfortKm: distanceComfortKm == null || distanceComfortKm === '' ? null : parseInt(distanceComfortKm, 10) }),
+        ...(meetupStyle !== undefined && { meetupStyle: meetupStyle?.trim() || null }),
+        ...(dogSizeComfort !== undefined && { dogSizeComfort: dogSizeComfort?.trim() || null }),
+        ...(boundariesNote !== undefined && { boundariesNote: boundariesNote?.trim() || null }),
       },
-      select: { id: true, email: true, name: true, avatarUrl: true, city: true, lat: true, lng: true, experience: true, availability: true, safetyPledgedAt: true },
+      select: { id: true, email: true, name: true, avatarUrl: true, bio: true, city: true, lat: true, lng: true, experience: true, availability: true, safetyPledgedAt: true, distanceComfortKm: true, meetupStyle: true, dogSizeComfort: true, boundariesNote: true },
     });
     res.json(user);
   } catch (e) {

@@ -9,19 +9,24 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  passwordHash    String
-  name            String?
-  avatarUrl       String?
-  experience      String?
-  availability    String?
-  city            String?
-  lat             Float?
-  lng             Float?
-  safetyPledgedAt DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  name              String?
+  avatarUrl         String?
+  bio               String?
+  experience        String?
+  availability      String?
+  city              String?
+  lat               Float?
+  lng               Float?
+  safetyPledgedAt   DateTime?
+  distanceComfortKm Int?
+  meetupStyle       String?
+  dogSizeComfort    String?
+  boundariesNote    String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   dogs             Dog[]
   posts            Post[]    @relation("PostAuthor")

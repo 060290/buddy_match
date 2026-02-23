@@ -20,6 +20,8 @@ import AddDog from './pages/AddDog';
 import EditDog from './pages/EditDog';
 import Settings from './pages/Settings';
 import Nearby from './pages/Nearby';
+import Tips from './pages/Tips';
+import TipDetail from './pages/TipDetail';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -50,6 +52,8 @@ export default function App() {
         <Route path="profile/dogs/new" element={<PrivateRoute><AddDog /></PrivateRoute>} />
         <Route path="profile/dogs/:id" element={<PrivateRoute><EditDog /></PrivateRoute>} />
         <Route path="settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+        <Route path="tips" element={<PrivateRoute><Tips /></PrivateRoute>} />
+        <Route path="tips/:slug" element={<PrivateRoute><TipDetail /></PrivateRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
