@@ -16,7 +16,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/dashboard');
+      setTimeout(() => navigate('/dashboard'), 0);
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {

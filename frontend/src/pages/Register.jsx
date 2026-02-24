@@ -17,7 +17,8 @@ export default function Register() {
     setLoading(true);
     try {
       await register(form);
-      navigate('/dashboard');
+      // Defer navigation so Layout can commit the logged-in structure first (avoids React removeChild error)
+      setTimeout(() => navigate('/dashboard'), 0);
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {
