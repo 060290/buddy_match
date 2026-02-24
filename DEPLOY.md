@@ -132,6 +132,17 @@ That URL is your live app. Open it in your browser to confirm it loads.
 
 ---
 
+### Step 2.5 – Use your own domain (e.g. buddymatch.co)
+
+**Sign-in only works when the site and the API are on the same server.** The app sends requests to `/api` on whatever domain you’re visiting. If buddymatch.co points somewhere that doesn’t run the backend (e.g. only static hosting), you’ll get “server not found” or “failed to fetch” when signing in.
+
+1. **In Railway:** Open your service → **Settings** → **Networking** / **Domains**. Click **Custom Domain** and add `buddymatch.co` (and `www.buddymatch.co` if you use www). Railway will show you the exact CNAME or A record to use.
+2. **At your domain registrar (e.g. GoDaddy):** Add the CNAME (or A record) Railway gave you so that `buddymatch.co` points to your Railway deployment. Remove any A/CNAME that pointed to a different host (e.g. Netlify, Vercel, GitHub Pages).
+3. **In Railway Variables:** Add `FRONTEND_ORIGIN` = `https://buddymatch.co` so cookies and CORS work for your domain. Save; Railway will redeploy.
+4. Wait for DNS to update (up to 24–48 hours, often minutes). Then open `https://buddymatch.co` and try signing in again.
+
+---
+
 ## Part 3: Demo login
 
 After the first deploy, you can log in with the demo account:
@@ -165,3 +176,7 @@ After the first deploy, you can log in with the demo account:
 
 - Confirm the remote URL: `git remote -v`
 - Make sure the repo exists on GitHub and your account has access.
+
+**“Server not found” (or “Failed to fetch”) when signing in on buddymatch.co**
+
+- The domain must point to the **same** server that runs the backend (Railway). If buddymatch.co points to a static host or another service, there is no `/api` there, so login fails. Follow **Step 2.5** above: add buddymatch.co as a custom domain in Railway and point your DNS to Railway. Do not host the frontend on a different service (e.g. Netlify) while the backend is on Railway unless you change the app to use a full API URL and CORS (advanced).
