@@ -12,6 +12,7 @@ export default function CreateMeetup() {
     lat: '',
     lng: '',
     meetupAt: '',
+    preferredDogSize: 'Any',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -86,6 +87,7 @@ export default function CreateMeetup() {
         lat: form.lat ? Number(form.lat) : undefined,
         lng: form.lng ? Number(form.lng) : undefined,
         meetupAt: form.meetupAt || undefined,
+        preferredDogSize: form.preferredDogSize || undefined,
       });
       navigate(`/meetups/${data.id}`);
     } catch (err) {
@@ -148,6 +150,18 @@ export default function CreateMeetup() {
         <div className="form-group">
           <label>Date & time</label>
           <input type="datetime-local" name="meetupAt" value={form.meetupAt} onChange={handleChange} />
+        </div>
+        <div className="form-group">
+          <label>Dog size</label>
+          <select name="preferredDogSize" value={form.preferredDogSize} onChange={handleChange} aria-describedby="dog-size-hint">
+            <option value="Any">Any size welcome</option>
+            <option value="Small">Small only</option>
+            <option value="Medium">Medium only</option>
+            <option value="Large">Large only</option>
+          </select>
+          <p id="dog-size-hint" className="form-hint" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem', marginBottom: 0 }}>
+            Recommended meetups will match this to your dog&apos;s profile.
+          </p>
         </div>
         {error && <p className="error-msg">{error}</p>}
         <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>

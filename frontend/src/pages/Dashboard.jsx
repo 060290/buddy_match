@@ -72,8 +72,31 @@ export default function Dashboard() {
     const now = new Date();
     return meetups
       .filter((m) => m && m.meetupAt && new Date(m.meetupAt) >= now)
-      .slice(0, 5);
+      .slice(0, 20);
   }, [meetups]);
+
+  const mySizes = useMemo(() => {
+    if (!Array.isArray(dogs)) return [];
+    return [...new Set(dogs.map((d) => d?.size).filter(Boolean))];
+  }, [dogs]);
+
+  const getMeetupPreferredSize = (m) => {
+    if (m?.preferredDogSize && m.preferredDogSize !== 'Any') return m.preferredDogSize;
+    const text = `${m?.title ?? ''} ${m?.body ?? ''}`.toLowerCase();
+    if (/\bmedium\b.*\b(dog|only)\b|\b(dog|only).*medium\b/.test(text) || /medium\s*dog/.test(text)) return 'Medium';
+    if (/\bsmall\b.*\b(dog|only)\b|\b(dog|only).*small\b/.test(text) || /small\s*dog/.test(text)) return 'Small';
+    if (/\blarge\b.*\b(dog|only)\b|\b(dog|only).*large\b/.test(text) || /large\s*dog/.test(text)) return 'Large';
+    return null;
+  };
+
+  const upcomingFromOthersSizeMatched = useMemo(() => {
+    return upcomingFromOthers.filter((m) => {
+      const preferred = getMeetupPreferredSize(m);
+      if (!preferred) return true;
+      if (mySizes.length === 0) return true;
+      return mySizes.includes(preferred);
+    });
+  }, [upcomingFromOthers, mySizes]);
 
   const myUpcoming = useMemo(() => {
     if (!Array.isArray(myMeetups)) return [];
@@ -83,9 +106,9 @@ export default function Dashboard() {
 
   const recommendedMeetups = useMemo(() => {
     const mine = myUpcoming.slice(0, 3);
-    const others = upcomingFromOthers.filter((m) => !mine.some((x) => x?.id === m?.id)).slice(0, 5 - mine.length);
+    const others = upcomingFromOthersSizeMatched.filter((m) => !mine.some((x) => x?.id === m?.id)).slice(0, 5 - mine.length);
     return [...mine, ...others];
-  }, [myUpcoming, upcomingFromOthers]);
+  }, [myUpcoming, upcomingFromOthersSizeMatched]);
 
   const userName = user?.name != null && typeof user.name === 'string' ? user.name : '';
 

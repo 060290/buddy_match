@@ -52,6 +52,7 @@ router.get('/mine', requireAuth, async (req, res) => {
       where: { authorId: req.user.id },
       orderBy: { meetupAt: 'asc' },
       include: {
+        author: { select: { id: true, name: true, city: true } },
         rsvps: { include: { user: { select: { id: true, name: true } } } },
         _count: { select: { rsvps: true } },
       },
@@ -86,8 +87,10 @@ router.use(requireAuth);
 
 router.post('/', async (req, res) => {
   try {
-    const { title, body, location, lat, lng, meetupAt } = req.body;
+    const { title, body, location, lat, lng, meetupAt, preferredDogSize } = req.body;
     if (!title || !body) return res.status(400).json({ error: 'Title and body required' });
+    const allowedSizes = ['Small', 'Medium', 'Large', 'Any'];
+    const size = allowedSizes.includes(preferredDogSize) ? preferredDogSize : null;
     const post = await prisma.post.create({
       data: {
         authorId: req.user.id,
@@ -97,6 +100,7 @@ router.post('/', async (req, res) => {
         lat: lat != null ? Number(lat) : null,
         lng: lng != null ? Number(lng) : null,
         meetupAt: meetupAt ? new Date(meetupAt) : null,
+        preferredDogSize: size,
       },
       include: { author: { select: { id: true, name: true, city: true } } },
     });
@@ -110,7 +114,9 @@ router.patch('/:id', async (req, res) => {
   try {
     const post = await prisma.post.findFirst({ where: { id: req.params.id, authorId: req.user.id } });
     if (!post) return res.status(404).json({ error: 'Post not found' });
-    const { title, body, location, lat, lng, meetupAt } = req.body;
+    const { title, body, location, lat, lng, meetupAt, preferredDogSize } = req.body;
+    const allowedSizes = ['Small', 'Medium', 'Large', 'Any'];
+    const size = preferredDogSize !== undefined ? (allowedSizes.includes(preferredDogSize) ? preferredDogSize : null) : undefined;
     const updated = await prisma.post.update({
       where: { id: req.params.id },
       data: {
@@ -120,6 +126,7 @@ router.patch('/:id', async (req, res) => {
         ...(lat !== undefined && { lat: lat == null ? null : Number(lat) }),
         ...(lng !== undefined && { lng: lng == null ? null : Number(lng) }),
         ...(meetupAt !== undefined && { meetupAt: meetupAt ? new Date(meetupAt) : null }),
+        ...(size !== undefined && { preferredDogSize: size }),
       },
       include: { author: { select: { id: true, name: true, city: true } } },
     });
